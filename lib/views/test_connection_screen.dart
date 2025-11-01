@@ -246,7 +246,7 @@ class _TestConnectionScreenState extends State<TestConnectionScreen> {
                               vertical: 8,
                             ),
                           ),
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: TextInputType.text,
                           textInputAction: TextInputAction.next,
                         ),
                       ),

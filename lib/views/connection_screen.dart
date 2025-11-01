@@ -213,7 +213,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                                 borderSide: const BorderSide(color: Color(0xFFFF723A), width: 2),
                               ),
                             ),
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            keyboardType: TextInputType.text,
                             textInputAction: TextInputAction.next,
                           ),
                           const SizedBox(height: 16),
