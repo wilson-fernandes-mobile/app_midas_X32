@@ -91,6 +91,9 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
   }
 
   Future<void> _connect() async {
+    // Fecha o teclado
+    FocusScope.of(context).unfocus();
+
     final viewModel = context.read<ConnectionViewModel>();
     final ip = _ipController.text.trim();
     final port = int.tryParse(_portController.text) ?? 10023;
@@ -210,7 +213,8 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                                 borderSide: const BorderSide(color: Color(0xFFFF723A), width: 2),
                               ),
                             ),
-                            keyboardType: TextInputType.number,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            textInputAction: TextInputAction.next,
                           ),
                           const SizedBox(height: 16),
 
@@ -237,6 +241,8 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                               ),
                             ),
                             keyboardType: TextInputType.number,
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (_) => _connect(),
                           ),
                           const SizedBox(height: 24),
 
