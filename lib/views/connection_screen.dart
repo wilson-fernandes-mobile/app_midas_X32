@@ -61,7 +61,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('💾 Última conexão carregada: ${viewModel.consoleInfo.ipAddress}'),
+            content: Text('Última conexão carregada: ${viewModel.consoleInfo.ipAddress}'),
             duration: const Duration(seconds: 2),
             backgroundColor: Colors.blue[700],
           ),

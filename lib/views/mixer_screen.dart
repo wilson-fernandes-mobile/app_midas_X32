@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../utils/fader_color_helper.dart';
 import '../viewmodels/mixer_viewmodel.dart';
 import '../viewmodels/connection_viewmodel.dart';
+import '../viewmodels/preset_viewmodel.dart';
 import '../models/channel.dart';
 import '../utils/channel_icon_helper.dart';
 import 'connection_screen.dart';
+import 'preset_list_screen.dart';
 
 /// Tela principal do mixer
 class MixerScreen extends StatefulWidget {
@@ -27,7 +30,7 @@ class _MixerScreenState extends State<MixerScreen> {
       // Inicia polling de meters (VU/Peak meters em tempo real)
       // demoMode: true = Simula meters (para emuladores que não suportam)
       // demoMode: false = Usa meters reais do console
-      _viewModel?.startMetersPolling(demoMode: true);
+      _viewModel?.startMetersPolling(demoMode: false);
     });
   }
 
@@ -80,6 +83,109 @@ class _MixerScreenState extends State<MixerScreen> {
     );
   }
 
+  /// Constrói a toolbar vertical para modo landscape
+  Widget _buildVerticalToolbar(BuildContext context) {
+    return Container(
+      width: 60,
+      color: Colors.black,
+      child: Column(
+        children: [
+          const SizedBox(height: 8),
+          // Indicador de preset aplicado
+          Consumer<PresetViewModel>(
+            builder: (context, presetViewModel, _) {
+              final appliedPreset = presetViewModel.appliedPreset;
+              final hasChanges = presetViewModel.hasUnsavedChanges;
+
+              if (appliedPreset == null) {
+                return const SizedBox(height: 48);
+              }
+
+              return Column(
+                children: [
+                  Stack(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.tune,
+                          color: hasChanges ? Colors.orange : Colors.green,
+                        ),
+                        onPressed: () {
+                          presetViewModel.clearAppliedPreset();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Auto-save desativado'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                        tooltip: hasChanges
+                            ? 'Salvando...'
+                            : appliedPreset.name,
+                      ),
+                      if (hasChanges)
+                        Positioned(
+                          right: 8,
+                          top: 8,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: Colors.orange,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const Divider(height: 1, color: Colors.grey),
+                ],
+              );
+            },
+          ),
+          // Botão de Presets
+          IconButton(
+            icon: const Icon(Icons.bookmark_border, color: Colors.white),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PresetListScreen()),
+              );
+            },
+            tooltip: 'Presets',
+          ),
+          const Divider(height: 1, color: Colors.grey),
+          // Botão de Refresh
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: () async {
+              final viewModel = context.read<MixerViewModel>();
+              await viewModel.refresh();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('✅ Informações recarregadas!'),
+                    duration: Duration(seconds: 2),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            },
+            tooltip: 'Recarregar',
+          ),
+          const Divider(height: 1, color: Colors.grey),
+          // Botão de Desconectar
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: _disconnect,
+            tooltip: 'Desconectar',
+          ),
+          const Spacer(),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Detecta orientação do dispositivo
@@ -89,14 +195,105 @@ class _MixerScreenState extends State<MixerScreen> {
       backgroundColor: Colors.grey[900],
       // Esconde AppBar quando estiver na horizontal
       appBar: isLandscape ? null : AppBar(
-        title: Consumer<MixerViewModel>(
-          builder: (context, viewModel, _) {
-            final mixName = viewModel.selectedMix?.name ?? 'CCL Midas';
-            return Text(mixName);
+        title: Consumer2<MixerViewModel, PresetViewModel>(
+          builder: (context, mixerViewModel, presetViewModel, _) {
+            final mixName = mixerViewModel.selectedMix?.name ?? 'CCL Midas';
+            final appliedPreset = presetViewModel.appliedPreset;
+            final hasChanges = presetViewModel.hasUnsavedChanges;
+
+            if (appliedPreset == null) {
+              return Text(mixName);
+            }
+
+            // Mostra nome do mix + preset aplicado de forma compacta
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  mixName,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      hasChanges ? Icons.edit : Icons.tune,
+                      size: 12,
+                      color: hasChanges ? Colors.orange : Colors.green,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      appliedPreset.name,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: hasChanges ? Colors.orange : Colors.green,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
           },
         ),
         backgroundColor: Colors.black,
         actions: [
+          // Indicador visual compacto de preset aplicado
+          Consumer<PresetViewModel>(
+            builder: (context, presetViewModel, _) {
+              if (presetViewModel.appliedPreset == null) {
+                return const SizedBox.shrink();
+              }
+
+              return IconButton(
+                icon: Stack(
+                  children: [
+                    Icon(
+                      Icons.tune,
+                      color: presetViewModel.hasUnsavedChanges
+                          ? Colors.orange
+                          : Colors.green,
+                    ),
+                    if (presetViewModel.hasUnsavedChanges)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Colors.orange,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                onPressed: () {
+                  presetViewModel.clearAppliedPreset();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Auto-save desativado'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+                tooltip: presetViewModel.hasUnsavedChanges
+                    ? 'Salvando... (toque para desativar)'
+                    : 'Preset aplicado (toque para desativar)',
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.bookmark_border),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PresetListScreen()),
+              );
+            },
+            tooltip: 'Presets',
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () async {
@@ -121,41 +318,50 @@ class _MixerScreenState extends State<MixerScreen> {
           ),
         ],
       ),
-      body: Consumer<MixerViewModel>(
-        builder: (context, viewModel, _) {
-          if (viewModel.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFFFF723A),
-              ),
-            );
-          }
-
-          // Mostra os canais mesmo sem Mix selecionado (Main LR)
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              return ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: viewModel.channels.length,
-                itemBuilder: (context, index) {
-                  final channel = viewModel.channels[index];
-                  return SizedBox(
-                    height: constraints.maxHeight,
-                    child: _ChannelStrip(
-                      channel: channel,
-                      onLevelChanged: (level) {
-                        viewModel.setChannelLevel(channel.number, level);
-                      },
-                      onMuteToggled: () {
-                        viewModel.toggleChannelMute(channel.number);
-                      },
+      body: Row(
+        children: [
+          // Toolbar vertical em landscape
+          if (isLandscape) _buildVerticalToolbar(context),
+          // Lista de canais
+          Expanded(
+            child: Consumer<MixerViewModel>(
+              builder: (context, viewModel, _) {
+                if (viewModel.isLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFFFF723A),
                     ),
                   );
-                },
-              );
-            },
-          );
-        },
+                }
+
+                // Mostra os canais mesmo sem Mix selecionado (Main LR)
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: viewModel.channels.length,
+                      itemBuilder: (context, index) {
+                        final channel = viewModel.channels[index];
+                        return SizedBox(
+                          height: constraints.maxHeight,
+                          child: _ChannelStrip(
+                            channel: channel,
+                            onLevelChanged: (level) {
+                              viewModel.setChannelLevel(channel.number, level);
+                            },
+                            onMuteToggled: () {
+                              viewModel.toggleChannelMute(channel.number);
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: Consumer<MixerViewModel>(
         builder: (context, viewModel, _) {
@@ -274,7 +480,7 @@ class _ChannelStrip extends StatelessWidget {
             child: Text(
               _levelToDb(channel.level),
               style: TextStyle(
-                color: isMuted ? Colors.grey[600] : _getLevelColor(channel.level),
+                color: isMuted ? Colors.grey[600] : FaderColorHelper.getLevelColor(channel.level),
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'monospace',
@@ -312,7 +518,7 @@ class _ChannelStrip extends StatelessWidget {
                                       begin: Alignment.topCenter,
                                       end: Alignment.bottomCenter,
                                       colors: [
-                                        _getLevelColor(channel.level).withOpacity(0.3),
+                                        FaderColorHelper.getLevelColor(channel.level).withOpacity(0.3),
                                         Colors.grey[800]!,
                                       ],
                                     ),
@@ -336,7 +542,7 @@ class _ChannelStrip extends StatelessWidget {
                               thumbShape: _CustomThumbShape(
                                 isMuted: isMuted,
                                 level: channel.level,
-                                levelColor: _getLevelColor(channel.level),
+                                levelColor: FaderColorHelper.getLevelColor(channel.level),
                               ),
                               overlayShape: const RoundSliderOverlayShape(
                                 overlayRadius: 24,
@@ -458,20 +664,6 @@ class _ChannelStrip extends StatelessWidget {
       // De 0.75 a 1.0 = 0dB a +10dB
       final db = (level - 0.75) / 0.25 * 10; // 0dB a +10dB
       return '+${db.toStringAsFixed(1)}dB';
-    }
-  }
-
-  /// Retorna a cor do indicador de dB baseado no nível
-  Color _getLevelColor(double level) {
-    if (level < 0.74) {
-      // Abaixo de 0dB = Amarelo
-      return Colors.amber;
-    } else if (level >= 0.74 && level <= 0.76) {
-      // Em 0dB (com tolerância) = Verde
-      return Colors.green;
-    } else {
-      // Acima de 0dB = Vermelho
-      return Colors.red;
     }
   }
 }
@@ -691,7 +883,7 @@ class _MasterControlBottomSheet extends StatelessWidget {
                             Text(
                               _levelToDb(viewModel.selectedMix!.level),
                               style: TextStyle(
-                                color: _getLevelColor(viewModel.selectedMix!.level),
+                                color: FaderColorHelper.getLevelColor(viewModel.selectedMix!.level),
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 fontFamily: 'monospace',
@@ -710,9 +902,9 @@ class _MasterControlBottomSheet extends StatelessWidget {
                             overlayShape: const RoundSliderOverlayShape(
                               overlayRadius: 20,
                             ),
-                            activeTrackColor: _getLevelColor(viewModel.selectedMix!.level),
+                            activeTrackColor: FaderColorHelper.getLevelColor(viewModel.selectedMix!.level),
                             inactiveTrackColor: Colors.grey[700],
-                            thumbColor: _getLevelColor(viewModel.selectedMix!.level),
+                            thumbColor: FaderColorHelper.getLevelColor(viewModel.selectedMix!.level),
                           ),
                           child: Slider(
                             value: viewModel.selectedMix!.level,
@@ -802,19 +994,6 @@ class _MasterControlBottomSheet extends StatelessWidget {
     }
   }
 
-  /// Retorna a cor do indicador de dB baseado no nível
-  Color _getLevelColor(double level) {
-    if (level < 0.74) {
-      // Abaixo de 0dB = Amarelo
-      return Colors.amber;
-    } else if (level >= 0.74 && level <= 0.76) {
-      // Em 0dB (com tolerância) = Verde
-      return Colors.green;
-    } else {
-      // Acima de 0dB = Vermelho
-      return Colors.red;
-    }
-  }
 }
 
 /// Widget de Peak Meter vertical moderno com animação demo

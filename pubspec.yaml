@@ -44,6 +44,9 @@ dependencies:
   # Local storage
   shared_preferences: ^2.2.2
 
+  # Date formatting
+  intl: ^0.19.0
+
   # Material Design Icons (ícones extras como guitarra, bateria, etc.)
   material_design_icons_flutter: ^7.0.7296
 
