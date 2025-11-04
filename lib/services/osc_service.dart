@@ -213,6 +213,8 @@ class OSCService {
   Future<void> requestMeters() async {
     // Solicita meters dos canais (1-32)
     await sendMessage('/meters/1');
+    // Solicita meters dos buses (1-16)
+    await sendMessage('/meters/2');
   }
 
   /// Processa blob binário de meters

@@ -98,7 +98,7 @@ class MixerViewModel extends ChangeNotifier {
       print('🎛️ MixerVM recebeu: $address ${message.arguments}');
     }
 
-    // Processa meters (níveis de áudio em tempo real)
+    // Processa meters dos canais (níveis de áudio em tempo real)
     if (address == '/meters/1' && message.arguments.isNotEmpty) {
       final arg = message.arguments[0];
 
@@ -114,6 +114,26 @@ class MixerViewModel extends ChangeNotifier {
       if (blob != null) {
         final meters = _oscService.parseMetersBlob(blob);
         _updateChannelPeakLevels(meters);
+      }
+      return; // Não precisa processar mais nada
+    }
+
+    // Processa meters dos buses (níveis de áudio em tempo real)
+    if (address == '/meters/2' && message.arguments.isNotEmpty) {
+      final arg = message.arguments[0];
+
+      // O argumento pode ser Uint8List ou List<int>
+      List<int>? blob;
+      if (arg is List<int>) {
+        blob = arg;
+      } else if (arg.runtimeType.toString().contains('Uint8List')) {
+        // Converte Uint8List para List<int>
+        blob = List<int>.from(arg as Iterable);
+      }
+
+      if (blob != null) {
+        final busMeters = _oscService.parseMetersBlob(blob);
+        _updateBusPeakLevels(busMeters);
       }
       return; // Não precisa processar mais nada
     }
@@ -246,6 +266,23 @@ class MixerViewModel extends ChangeNotifier {
 
     if (hasChanges) {
       notifyListeners();
+    }
+  }
+
+  /// Atualiza os peak levels dos buses (vindo dos meters)
+  void _updateBusPeakLevels(Map<int, double> busMeters) {
+    if (_selectedMix == null) return;
+
+    for (final entry in busMeters.entries) {
+      final busNumber = entry.key;
+      final peakLevel = entry.value;
+
+      // Só atualiza se for o bus/mix selecionado
+      if (busNumber == _selectedMix!.number) {
+        _selectedMix = _selectedMix!.copyWith(peakLevel: peakLevel);
+        notifyListeners();
+        return;
+      }
     }
   }
 
@@ -406,6 +443,7 @@ class MixerViewModel extends ChangeNotifier {
     final meters = <int, double>{};
     final random = DateTime.now().millisecondsSinceEpoch % 100 / 100.0;
 
+    // Simula meters dos canais
     for (int ch = 1; ch <= 32; ch++) {
       // Simula níveis variados baseados no fader atual
       final channel = _channels[ch - 1];
@@ -419,6 +457,19 @@ class MixerViewModel extends ChangeNotifier {
     }
 
     _updateChannelPeakLevels(meters);
+
+    // Simula meters do bus selecionado
+    if (_selectedMix != null) {
+      final busMeters = <int, double>{};
+      final baseLevel = _selectedMix!.level;
+
+      // Adiciona variação aleatória (±20%)
+      final variation = (random - 0.5) * 0.4;
+      final simulatedLevel = (baseLevel + variation).clamp(0.0, 1.0);
+
+      busMeters[_selectedMix!.number] = simulatedLevel;
+      _updateBusPeakLevels(busMeters);
+    }
   }
 
   /// Para a solicitação periódica de meters

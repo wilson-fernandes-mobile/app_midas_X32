@@ -15,7 +15,7 @@ class PresetListScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey[900],
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.grey[900],
         title: const Row(
           children: [
             Icon(Icons.bookmark, color: Color(0xFFFF723A)),

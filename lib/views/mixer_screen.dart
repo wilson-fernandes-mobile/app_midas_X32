@@ -30,7 +30,7 @@ class _MixerScreenState extends State<MixerScreen> {
       // Inicia polling de meters (VU/Peak meters em tempo real)
       // demoMode: true = Simula meters (para emuladores que não suportam)
       // demoMode: false = Usa meters reais do console
-      _viewModel?.startMetersPolling(demoMode: false);
+      _viewModel?.startMetersPolling(demoMode: true);
     });
   }
 
@@ -87,7 +87,7 @@ class _MixerScreenState extends State<MixerScreen> {
   Widget _buildVerticalToolbar(BuildContext context) {
     return Container(
       width: 60,
-      color: Colors.black,
+      color: Colors.grey[900],
       child: Column(
         children: [
           const SizedBox(height: 8),
@@ -237,7 +237,7 @@ class _MixerScreenState extends State<MixerScreen> {
             );
           },
         ),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.grey[900],
         actions: [
           // Indicador visual compacto de preset aplicado
           Consumer<PresetViewModel>(
@@ -504,29 +504,12 @@ class _ChannelStrip extends StatelessWidget {
                   Stack(
                     alignment: Alignment.center,
                     children: [
-                      // Background track com marcações
+                      // Background track com marcações de régua
                       Positioned.fill(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 35),
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  width: 6,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        FaderColorHelper.getLevelColor(channel.level).withOpacity(0.3),
-                                        Colors.grey[800]!,
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(3),
-                                  ),
-                                ),
-                              ),
-                            ],
+                          child: _FaderTrackWithMarkers(
+                            level: channel.level,
                           ),
                         ),
                       ),
@@ -666,6 +649,173 @@ class _ChannelStrip extends StatelessWidget {
       return '+${db.toStringAsFixed(1)}dB';
     }
   }
+}
+
+/// Widget que desenha o track do fader com marcadores de régua
+class _FaderTrackWithMarkers extends StatelessWidget {
+  final double level;
+
+  const _FaderTrackWithMarkers({
+    required this.level,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final height = constraints.maxHeight;
+
+        return Stack(
+          children: [
+            // Track de fundo
+            Center(
+              child: Container(
+                width: 6,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      FaderColorHelper.getLevelColor(level).withOpacity(0.3),
+                      Colors.grey[800]!,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ),
+
+            // Marcadores de régua
+            CustomPaint(
+              size: Size(constraints.maxWidth, height),
+              painter: _FaderRulerPainter(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Painter para desenhar os marcadores de régua no fader
+class _FaderRulerPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final centerX = size.width / 2;
+
+    // Destaque especial na zona verde (0dB) - DESENHA PRIMEIRO (fundo)
+    final greenZoneY = size.height * 0.25; // 0dB está em 25% da altura
+    final greenZonePaint = Paint()
+      ..color = Colors.green.withOpacity(0.2)
+      ..style = PaintingStyle.fill;
+
+    // Retângulo de destaque na zona verde (mais alto para cobrir mais área)
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: Offset(centerX, greenZoneY),
+          width: 40,
+          height: 30,
+        ),
+        const Radius.circular(6),
+      ),
+      greenZonePaint,
+    );
+
+    // Paints para os marcadores
+    final thickPaint = Paint()
+      ..color = Colors.white.withOpacity(0.6)
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+
+    final mediumPaint = Paint()
+      ..color = Colors.white.withOpacity(0.4)
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round;
+
+    final thinPaint = Paint()
+      ..color = Colors.white.withOpacity(0.25)
+      ..strokeWidth = 1.0
+      ..strokeCap = StrokeCap.round;
+
+    final greenPaint = Paint()
+      ..color = Colors.green.withOpacity(0.8)
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
+
+    // Marcadores principais com labels
+    // position: 0.0 = topo (+10dB), 1.0 = fundo (-∞dB)
+    final markers = [
+      {'position': 0.0, 'length': 14.0, 'paint': thickPaint, 'label': '+10'},
+      {'position': 0.05, 'length': 6.0, 'paint': thinPaint, 'label': null},
+      {'position': 0.10, 'length': 10.0, 'paint': mediumPaint, 'label': '+5'},
+      {'position': 0.15, 'length': 6.0, 'paint': thinPaint, 'label': null},
+      {'position': 0.20, 'length': 6.0, 'paint': thinPaint, 'label': null},
+
+      // 0dB - ZONA VERDE (destaque especial)
+      {'position': 0.25, 'length': 18.0, 'paint': greenPaint, 'label': '0'},
+
+      {'position': 0.30, 'length': 6.0, 'paint': thinPaint, 'label': null},
+      {'position': 0.35, 'length': 8.0, 'paint': mediumPaint, 'label': '-5'},
+      {'position': 0.40, 'length': 6.0, 'paint': thinPaint, 'label': null},
+      {'position': 0.45, 'length': 10.0, 'paint': mediumPaint, 'label': '-10'},
+      {'position': 0.50, 'length': 6.0, 'paint': thinPaint, 'label': null},
+      {'position': 0.55, 'length': 8.0, 'paint': mediumPaint, 'label': '-15'},
+      {'position': 0.60, 'length': 10.0, 'paint': mediumPaint, 'label': '-20'},
+      {'position': 0.65, 'length': 6.0, 'paint': thinPaint, 'label': null},
+      {'position': 0.70, 'length': 8.0, 'paint': mediumPaint, 'label': '-30'},
+      {'position': 0.80, 'length': 10.0, 'paint': mediumPaint, 'label': '-40'},
+      {'position': 0.90, 'length': 10.0, 'paint': mediumPaint, 'label': '-50'},
+      {'position': 0.95, 'length': 14.0, 'paint': thickPaint, 'label': '-60'},
+    ];
+
+    // Desenha os marcadores
+    for (final marker in markers) {
+      final position = marker['position'] as double;
+      final length = marker['length'] as double;
+      final paint = marker['paint'] as Paint;
+      final label = marker['label'] as String?;
+
+      final y = size.height * position;
+
+      // Linha à esquerda
+      canvas.drawLine(
+        Offset(centerX - 3 - length, y),
+        Offset(centerX - 3, y),
+        paint,
+      );
+
+      // Linha à direita
+      canvas.drawLine(
+        Offset(centerX + 3, y),
+        Offset(centerX + 3 + length, y),
+        paint,
+      );
+
+      // Desenha label se existir (apenas do lado direito para não poluir)
+      if (label != null) {
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: label,
+            style: TextStyle(
+              color: position == 0.25 ? Colors.green : Colors.white.withOpacity(0.5),
+              fontSize: 9,
+              fontWeight: position == 0.25 ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        );
+        textPainter.layout();
+        textPainter.paint(
+          canvas,
+          Offset(centerX + 3 + length + 3, y - textPainter.height / 2),
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Custom thumb shape para o fader
