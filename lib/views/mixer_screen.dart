@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../utils/fader_color_helper.dart';
@@ -337,22 +339,42 @@ class _MixerScreenState extends State<MixerScreen> {
                 // Mostra os canais mesmo sem Mix selecionado (Main LR)
                 return LayoutBuilder(
                   builder: (context, constraints) {
-                    return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: viewModel.channels.length,
-                      itemBuilder: (context, index) {
-                        final channel = viewModel.channels[index];
-                        return SizedBox(
-                          height: constraints.maxHeight,
-                          child: _ChannelStrip(
-                            channel: channel,
-                            onLevelChanged: (level) {
-                              viewModel.setChannelLevel(channel.number, level);
-                            },
-                            onMuteToggled: () {
-                              viewModel.toggleChannelMute(channel.number);
-                            },
-                          ),
+                    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
+                    // Calcula quantos canais cabem na tela
+                    final channelWidth = isLandscape ? 80.0 : 110.0;
+                    final channelMargin = isLandscape ? 8.0 : 12.0; // horizontal margin * 2
+                    final totalChannelWidth = channelWidth + channelMargin;
+                    final channelsPerPage = (constraints.maxWidth / totalChannelWidth).floor();
+
+                    // Agrupa canais em páginas
+                    final channels = viewModel.channels;
+                    final pageCount = (channels.length / channelsPerPage).ceil();
+
+                    return PageView.builder(
+                      itemCount: pageCount,
+                      controller: PageController(viewportFraction: 1.0),
+                      itemBuilder: (context, pageIndex) {
+                        final startIndex = pageIndex * channelsPerPage;
+                        final endIndex = (startIndex + channelsPerPage).clamp(0, channels.length);
+                        final pageChannels = channels.sublist(startIndex, endIndex);
+
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center, // Centraliza os canais
+                          children: pageChannels.map((channel) {
+                            return SizedBox(
+                              height: constraints.maxHeight,
+                              child: _ChannelStrip(
+                                channel: channel,
+                                onLevelChanged: (level) {
+                                  viewModel.setChannelLevel(channel.number, level);
+                                },
+                                onMuteToggled: () {
+                                  viewModel.toggleChannelMute(channel.number);
+                                },
+                              ),
+                            );
+                          }).toList(),
                         );
                       },
                     );
@@ -1216,80 +1238,30 @@ class _PeakMeter extends StatefulWidget {
   State<_PeakMeter> createState() => _PeakMeterState();
 }
 
-class _PeakMeterState extends State<_PeakMeter> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Animação demo (simula sinal de áudio)
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    _animation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.1, end: 0.6)
-            .chain(CurveTween(curve: Curves.easeInOut)),
-        weight: 1,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.6, end: 0.3)
-            .chain(CurveTween(curve: Curves.easeInOut)),
-        weight: 1,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.3, end: 0.8)
-            .chain(CurveTween(curve: Curves.easeInOut)),
-        weight: 1,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.8, end: 0.2)
-            .chain(CurveTween(curve: Curves.easeInOut)),
-        weight: 1,
-      ),
-    ]).animate(_controller);
-
-    _controller.repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
+class _PeakMeterState extends State<_PeakMeter> {
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        // Usa o valor real do peakLevel (que agora reflete o fader)
-        final displayLevel = widget.isMuted ? 0.0 : widget.peakLevel;
+    // Usa o valor real do peakLevel (vem do ViewModel via meters)
+    final displayLevel = widget.isMuted ? 0.0 : widget.peakLevel;
 
-        return Container(
-          width: 8,
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
+    return Container(
+      width: 8,
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(3),
+        child: CustomPaint(
+          painter: _PeakMeterPainter(
+            peakLevel: displayLevel,
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(3),
-            child: CustomPaint(
-              painter: _PeakMeterPainter(
-                peakLevel: displayLevel,
-              ),
-            ),
-          ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
@@ -1363,80 +1335,30 @@ class _PeakMeterHorizontal extends StatefulWidget {
   State<_PeakMeterHorizontal> createState() => _PeakMeterHorizontalState();
 }
 
-class _PeakMeterHorizontalState extends State<_PeakMeterHorizontal> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Animação demo (simula sinal de áudio)
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    _animation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.1, end: 0.6)
-            .chain(CurveTween(curve: Curves.easeInOut)),
-        weight: 1,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.6, end: 0.3)
-            .chain(CurveTween(curve: Curves.easeInOut)),
-        weight: 1,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.3, end: 0.8)
-            .chain(CurveTween(curve: Curves.easeInOut)),
-        weight: 1,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.8, end: 0.2)
-            .chain(CurveTween(curve: Curves.easeInOut)),
-        weight: 1,
-      ),
-    ]).animate(_controller);
-
-    _controller.repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
+class _PeakMeterHorizontalState extends State<_PeakMeterHorizontal> {
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        // Usa o valor real do peakLevel (que agora reflete o bus fader)
-        final displayLevel = widget.peakLevel;
+    // Usa o valor real do peakLevel (vem do ViewModel via meters)
+    final displayLevel = widget.peakLevel;
 
-        return Container(
-          height: 12, // Aumentei um pouco para ficar mais visível
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-              width: 1,
-            ),
+    return Container(
+      height: 12,
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(5),
+        child: CustomPaint(
+          painter: _PeakMeterHorizontalPainter(
+            peakLevel: displayLevel,
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(5),
-            child: CustomPaint(
-              painter: _PeakMeterHorizontalPainter(
-                peakLevel: displayLevel,
-              ),
-            ),
-          ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

@@ -61,6 +61,12 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
 
+  # Gerador automático de ícones para Android e iOS
+  flutter_launcher_icons: ^0.13.1
+
+  # Gerador automático de splash screen para Android e iOS
+  flutter_native_splash: ^2.4.0
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -72,10 +78,10 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  # Assets do app
+  assets:
+    - assets/images/
+    - assets/icon/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -102,3 +108,38 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Configuração do gerador de ícones
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  # Remove canal alpha do iOS
+  remove_alpha_ios: true
+
+# Configuração da splash screen
+flutter_native_splash:
+  # Cor de fundo (mesma da tela de conexão - Colors.grey[900])
+  color: "#212121"
+  color_dark: "#212121"
+
+  # Logo menor para não cortar
+  image: assets/images/logo_splash.png
+  image_dark: assets/images/logo_splash.png
+
+  # Android
+  android: true
+  android_gravity: center
+
+  # Android 12+
+  android_12:
+    image: assets/images/logo_splash.png
+    color: "#212121"
+    icon_background_color: "#212121"
+
+  # iOS
+  ios: true
+  ios_content_mode: center
+
+  # Fullscreen
+  fullscreen: true

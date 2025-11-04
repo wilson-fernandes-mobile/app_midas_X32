@@ -50,7 +50,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
     print('   Porta do ViewModel: ${viewModel.consoleInfo.port}');
 
     if (viewModel.consoleInfo.ipAddress.isNotEmpty) {
-      print('✅ Preenchendo campos com IP salvo');
+      print('Preenchendo campos com IP salvo');
       setState(() {
         _ipController.text = viewModel.consoleInfo.ipAddress;
         _portController.text = viewModel.consoleInfo.port.toString();
@@ -58,15 +58,15 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
       });
 
       // Mostra mensagem que carregou o último IP usado
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Última conexão carregada: ${viewModel.consoleInfo.ipAddress}'),
-            duration: const Duration(seconds: 2),
-            backgroundColor: Colors.blue[700],
-          ),
-        );
-      }
+      // if (mounted) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(
+      //       content: Text('Última conexão carregada: ${viewModel.consoleInfo.ipAddress}'),
+      //       duration: const Duration(seconds: 2),
+      //       backgroundColor: Colors.blue[700],
+      //     ),
+      //   );
+      // }
 
       // Remove o listener após carregar
       viewModel.removeListener(_onViewModelChanged);
@@ -144,21 +144,21 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Logo/Título
-                  const Icon(
-                    Icons.graphic_eq,
-                    size: 80,
-                    color: Color(0xFFFF723A),
+                  Image.asset(
+                    'assets/images/logo.png',
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Fallback caso a imagem não seja encontrada
+                      return const Icon(
+                        Icons.graphic_eq,
+                        size: 80,
+                        color: Color(0xFFFF723A),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'CCL Midas',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFFF723A),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
+
                   Text(
                     'Personal Monitor Mixer',
                     style: TextStyle(

@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'CCL Midas',
+        title: 'MixBot',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           brightness: Brightness.dark,
