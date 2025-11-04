@@ -396,10 +396,14 @@ class _ChannelStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMuted = channel.mute;
     final levelPercent = (channel.level * 100).toInt();
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
 
     return Container(
-      width: 110,
-      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
+      width: isLandscape ? 80 : 110, // Mais estreito em landscape
+      margin: EdgeInsets.symmetric(
+        horizontal: isLandscape ? 4 : 6,
+        vertical: 12,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -533,6 +537,10 @@ class _ChannelStrip extends StatelessWidget {
                               activeTrackColor: Colors.transparent,
                               inactiveTrackColor: Colors.transparent,
                               thumbColor: Colors.transparent,
+                              // Remove padding padrão do Slider
+                              trackShape: const _CustomSliderTrackShape(),
+                              // Remove padding vertical
+                              overlayColor: Colors.transparent,
                             ),
                             child: Slider(
                               value: channel.level,
@@ -703,8 +711,12 @@ class _FaderRulerPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final centerX = size.width / 2;
 
+    // Conversão: level 0.75 = 0dB
+    // Slider invertido: level 0.75 → posição visual 1.0 - 0.75 = 0.25 (25% do topo)
+    final zeroDB = 1.0 - 0.75; // 0.25
+
     // Destaque especial na zona verde (0dB) - DESENHA PRIMEIRO (fundo)
-    final greenZoneY = size.height * 0.25; // 0dB está em 25% da altura
+    final greenZoneY = size.height * zeroDB;
     final greenZonePaint = Paint()
       ..color = Colors.green.withOpacity(0.2)
       ..style = PaintingStyle.fill;
@@ -744,29 +756,31 @@ class _FaderRulerPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     // Marcadores principais com labels
-    // position: 0.0 = topo (+10dB), 1.0 = fundo (-∞dB)
+    // Conversão de dB para position visual (invertido):
+    // +10dB (level 1.0) → position 0.0 (topo)
+    // 0dB (level 0.75) → position 0.25 (25% do topo)
+    // -∞dB (level 0.0) → position 1.0 (fundo)
     final markers = [
-      {'position': 0.0, 'length': 14.0, 'paint': thickPaint, 'label': '+10'},
-      {'position': 0.05, 'length': 6.0, 'paint': thinPaint, 'label': null},
-      {'position': 0.10, 'length': 10.0, 'paint': mediumPaint, 'label': '+5'},
-      {'position': 0.15, 'length': 6.0, 'paint': thinPaint, 'label': null},
-      {'position': 0.20, 'length': 6.0, 'paint': thinPaint, 'label': null},
+      {'position': 1.0 - 1.0, 'length': 14.0, 'paint': thickPaint, 'label': '+10'},      // level 1.0
+      {'position': 1.0 - 0.875, 'length': 6.0, 'paint': thinPaint, 'label': null},       // level 0.875
+      {'position': 1.0 - 0.8125, 'length': 10.0, 'paint': mediumPaint, 'label': '+5'},   // level 0.8125 (+5dB)
+      {'position': 1.0 - 0.78125, 'length': 6.0, 'paint': thinPaint, 'label': null},     // level 0.78125
 
-      // 0dB - ZONA VERDE (destaque especial)
-      {'position': 0.25, 'length': 18.0, 'paint': greenPaint, 'label': '0'},
+      // 0dB - ZONA VERDE (destaque especial) - level 0.75
+      {'position': zeroDB, 'length': 18.0, 'paint': greenPaint, 'label': '0'},
 
-      {'position': 0.30, 'length': 6.0, 'paint': thinPaint, 'label': null},
-      {'position': 0.35, 'length': 8.0, 'paint': mediumPaint, 'label': '-5'},
-      {'position': 0.40, 'length': 6.0, 'paint': thinPaint, 'label': null},
-      {'position': 0.45, 'length': 10.0, 'paint': mediumPaint, 'label': '-10'},
-      {'position': 0.50, 'length': 6.0, 'paint': thinPaint, 'label': null},
-      {'position': 0.55, 'length': 8.0, 'paint': mediumPaint, 'label': '-15'},
-      {'position': 0.60, 'length': 10.0, 'paint': mediumPaint, 'label': '-20'},
-      {'position': 0.65, 'length': 6.0, 'paint': thinPaint, 'label': null},
-      {'position': 0.70, 'length': 8.0, 'paint': mediumPaint, 'label': '-30'},
-      {'position': 0.80, 'length': 10.0, 'paint': mediumPaint, 'label': '-40'},
-      {'position': 0.90, 'length': 10.0, 'paint': mediumPaint, 'label': '-50'},
-      {'position': 0.95, 'length': 14.0, 'paint': thickPaint, 'label': '-60'},
+      {'position': 1.0 - 0.70, 'length': 6.0, 'paint': thinPaint, 'label': null},
+      {'position': 1.0 - 0.65, 'length': 8.0, 'paint': mediumPaint, 'label': '-5'},
+      {'position': 1.0 - 0.60, 'length': 6.0, 'paint': thinPaint, 'label': null},
+      {'position': 1.0 - 0.55, 'length': 10.0, 'paint': mediumPaint, 'label': '-10'},
+      {'position': 1.0 - 0.50, 'length': 6.0, 'paint': thinPaint, 'label': null},
+      {'position': 1.0 - 0.45, 'length': 8.0, 'paint': mediumPaint, 'label': '-15'},
+      {'position': 1.0 - 0.40, 'length': 10.0, 'paint': mediumPaint, 'label': '-20'},
+      {'position': 1.0 - 0.35, 'length': 6.0, 'paint': thinPaint, 'label': null},
+      {'position': 1.0 - 0.30, 'length': 8.0, 'paint': mediumPaint, 'label': '-30'},
+      {'position': 1.0 - 0.20, 'length': 10.0, 'paint': mediumPaint, 'label': '-40'},
+      {'position': 1.0 - 0.10, 'length': 10.0, 'paint': mediumPaint, 'label': '-50'},
+      {'position': 1.0 - 0.05, 'length': 14.0, 'paint': thickPaint, 'label': '-60'},
     ];
 
     // Desenha os marcadores
@@ -816,6 +830,48 @@ class _FaderRulerPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Custom track shape que remove o padding padrão do Slider
+class _CustomSliderTrackShape extends SliderTrackShape {
+  const _CustomSliderTrackShape();
+
+  @override
+  Rect getPreferredRect({
+    required RenderBox parentBox,
+    Offset offset = Offset.zero,
+    required SliderThemeData sliderTheme,
+    bool isEnabled = false,
+    bool isDiscrete = false,
+  }) {
+    final double trackHeight = sliderTheme.trackHeight ?? 2;
+    final double trackWidth = parentBox.size.width;
+
+    // Remove padding - usa toda a largura disponível
+    return Rect.fromLTWH(
+      offset.dx,
+      offset.dy + (parentBox.size.height - trackHeight) / 2,
+      trackWidth,
+      trackHeight,
+    );
+  }
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset offset, {
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required Animation<double> enableAnimation,
+    required TextDirection textDirection,
+    required Offset thumbCenter,
+    Offset? secondaryOffset,
+    bool isDiscrete = false,
+    bool isEnabled = false,
+    double additionalActiveTrackHeight = 2,
+  }) {
+    // Não desenha nada - track é transparente
+  }
 }
 
 /// Custom thumb shape para o fader
