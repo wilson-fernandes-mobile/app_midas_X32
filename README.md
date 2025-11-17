@@ -1,4 +1,4 @@
-# CCL Midas - Personal Monitor Mixer
+flutter doctor -vcd .# CCL Midas - Personal Monitor Mixer
 
 Aplicativo Flutter para controle pessoal de monitor (in-ear) para consoles **Midas M32** e **Behringer X32**.
 
