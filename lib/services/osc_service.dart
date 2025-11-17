@@ -217,6 +217,15 @@ class OSCService {
     await sendMessage('/meters/2');
   }
 
+  /// Renova a subscrição de meters (deve ser chamado a cada 10 segundos)
+  /// Segundo o protocolo OSC do X32/M32, meters precisam ser renovados
+  Future<void> renewMeters() async {
+    if (kDebugMode) {
+      print('🔄 Renovando subscrição de meters (/renew)');
+    }
+    await sendMessage('/renew', ['meters']);
+  }
+
   /// Processa blob binário de meters
   /// Cada canal = 2 bytes (16-bit signed integer)
   /// Retorna Map<int, double> onde key = channel number, value = peak level (0.0-1.0)

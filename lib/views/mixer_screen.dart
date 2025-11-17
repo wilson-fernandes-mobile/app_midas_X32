@@ -32,7 +32,7 @@ class _MixerScreenState extends State<MixerScreen> {
       // Inicia polling de meters (VU/Peak meters em tempo real)
       // demoMode: true = Simula meters (para emuladores que não suportam)
       // demoMode: false = Usa meters reais do console
-      _viewModel?.startMetersPolling(demoMode: true);
+      _viewModel?.startMetersPolling(demoMode: false);
     });
   }
 
@@ -479,11 +479,11 @@ class _ChannelStrip extends StatelessWidget {
             ),
           ),
 
-          // Ícone do canal (baseado no nome)
+          // Ícone do canal (baseado no nome) - Usa imagens reais quando disponíveis
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Icon(
-              ChannelIconHelper.getIconForChannelName(channel.name),
+            child: ChannelIconHelper.getIconWidgetForChannelName(
+              channel.name,
               size: 24,
               color: isMuted
                   ? Colors.grey[700]

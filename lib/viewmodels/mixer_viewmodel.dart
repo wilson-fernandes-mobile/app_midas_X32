@@ -15,6 +15,7 @@ class MixerViewModel extends ChangeNotifier {
   bool _isLoading = false;
   StreamSubscription<OSCMessage>? _oscSubscription;
   Timer? _metersTimer;
+  Timer? _renewTimer;
 
   MixerViewModel(this._oscService) {
     _initializeChannels();
@@ -415,13 +416,16 @@ class MixerViewModel extends ChangeNotifier {
 
   /// Inicia a solicitação periódica de meters (VU/Peak meters em tempo real)
   void startMetersPolling({bool demoMode = false}) {
-    // Cancela timer anterior se existir
+    // Cancela timers anteriores se existirem
     _metersTimer?.cancel();
+    _renewTimer?.cancel();
 
     if (kDebugMode) {
       print('📊 Iniciando polling de meters (50ms = ~20Hz)');
       if (demoMode) {
         print('   🎭 MODO DEMO: Simulando meters (emulador não suporta)');
+      } else {
+        print('   🎚️  MODO REAL: Usando meters do console');
       }
     }
 
@@ -435,6 +439,15 @@ class MixerViewModel extends ChangeNotifier {
       _metersTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
         _oscService.requestMeters();
       });
+
+      // IMPORTANTE: X32/M32 requer renovação de meters a cada 10 segundos
+      // Envia /renew a cada 9 segundos para garantir
+      _renewTimer = Timer.periodic(const Duration(seconds: 9), (timer) {
+        _oscService.renewMeters();
+      });
+
+      // Envia o primeiro renew imediatamente
+      _oscService.renewMeters();
     }
   }
 
@@ -480,6 +493,8 @@ class MixerViewModel extends ChangeNotifier {
 
     _metersTimer?.cancel();
     _metersTimer = null;
+    _renewTimer?.cancel();
+    _renewTimer = null;
   }
 
   @override

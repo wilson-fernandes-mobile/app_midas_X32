@@ -3,6 +3,136 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 
 /// Helper para determinar ícones de canais baseado no nome
 class ChannelIconHelper {
+  /// Retorna um Widget (Image ou Icon) baseado no nome do canal
+  /// Usa imagens reais quando disponíveis (SEM pintar), senão usa ícones Material (COM cor)
+  static Widget getIconWidgetForChannelName(String name, {double size = 24, Color? color}) {
+    final nameLower = name.toLowerCase();
+
+    // Vocais - Microfone (IMAGEM - sem pintar)
+    if (nameLower.contains('voc') ||
+        nameLower.contains('vocal') ||
+        nameLower.contains('mic') ||
+        nameLower.contains('lead') ||
+        nameLower.contains('backing')) {
+      // Diferencia por gênero se possível
+      if (nameLower.contains('male') || nameLower.contains('masculino') || nameLower.contains('homem')) {
+        return Image.asset('assets/images/ic_mic_male.png', width: size, height: size);
+      } else if (nameLower.contains('female') || nameLower.contains('feminino') || nameLower.contains('mulher')) {
+        return Image.asset('assets/images/ic_mic_female.png', width: size, height: size);
+      }
+      return Image.asset('assets/images/ic_mic.png', width: size, height: size);
+    }
+
+    // Bateria - Kick/Bumbo (IMAGEM - sem pintar)
+    if (nameLower.contains('kick') || nameLower.contains('bumbo')) {
+      return Image.asset('assets/images/ic_bumbo.png', width: size, height: size);
+    }
+
+    // Bateria - Snare/Caixa (IMAGEM - sem pintar)
+    if (nameLower.contains('snare') || nameLower.contains('caixa')) {
+      return Image.asset('assets/images/ic_snare.png', width: size, height: size);
+    }
+
+    // Bateria - Pratos/Overhead/Cymbal (IMAGEM - sem pintar)
+    if (nameLower.contains('overhead') ||
+        nameLower.contains('oh') ||
+        nameLower.contains('cymbal') ||
+        nameLower.contains('prato')) {
+      return Image.asset('assets/images/ic_cymbal.png', width: size, height: size);
+    }
+
+    // Bateria - Hi-Hat/Chimbal (IMAGEM - sem pintar)
+    if (nameLower.contains('hat') || nameLower.contains('chimbal') || nameLower.contains('hihat')) {
+      return Image.asset('assets/images/ic_cymbal.png', width: size, height: size);
+    }
+
+    // Bateria - Toms/Drums genéricos (ÍCONE - com cor)
+    if (nameLower.contains('tom') || nameLower.contains('drum')) {
+      return Icon(MdiIcons.musicCircle, size: size, color: color);
+    }
+
+    // Bateria eletrônica/Pads (IMAGEM - sem pintar)
+    if (nameLower.contains('pad') || nameLower.contains('eletronic') || nameLower.contains('eletron')) {
+      return Image.asset('assets/images/ic_drum_machine_pad.png', width: size, height: size);
+    }
+
+    // Baixo (IMAGEM - sem pintar)
+    if (nameLower.contains('bass') ||
+        nameLower.contains('baixo') ||
+        nameLower.contains('baixão') ||
+        nameLower.contains('baixao') ||
+        nameLower.contains('contra') ||
+        nameLower.contains('bx')) {
+      return Image.asset('assets/images/ic_bass.png', width: size, height: size);
+    }
+
+    // Violão/Acústico (IMAGEM - sem pintar)
+    if (nameLower.contains('acoustic') ||
+        nameLower.contains('violao') ||
+        nameLower.contains('violão') ||
+        nameLower.contains('acustic') ||
+        nameLower.contains('acústic')) {
+      return Image.asset('assets/images/ic_acustic_guitar.png', width: size, height: size);
+    }
+
+    // Bandolim/Mandolin (IMAGEM - sem pintar)
+    if (nameLower.contains('mandolin') || nameLower.contains('bandolim')) {
+      return Image.asset('assets/images/ic_mandolin.png', width: size, height: size);
+    }
+
+    // Guitarras elétricas (IMAGEM - sem pintar)
+    if (nameLower.contains('guitar') ||
+        nameLower.contains('guitarra') ||
+        nameLower.contains('gtr') ||
+        nameLower.contains('gt')) {
+      return Image.asset('assets/images/ic_electric_guitar.png', width: size, height: size);
+    }
+
+    // Teclados (IMAGEM - sem pintar)
+    if (nameLower.contains('key') ||
+        nameLower.contains('piano') ||
+        nameLower.contains('synth') ||
+        nameLower.contains('teclado')) {
+      return Image.asset('assets/images/ic_teclado.png', width: size, height: size);
+    }
+
+    // Percussão (ÍCONE - com cor)
+    if (nameLower.contains('perc') ||
+        nameLower.contains('conga') ||
+        nameLower.contains('bongo') ||
+        nameLower.contains('shaker')) {
+      return Icon(MdiIcons.musicNote, size: size, color: color);
+    }
+
+    // Click/Metrônomo (IMAGEM - sem pintar)
+    if (nameLower.contains('click') || nameLower.contains('metronome') || nameLower.contains('metrônomo')) {
+      return Image.asset('assets/images/ic_metronome_click.png', width: size, height: size);
+    }
+
+    // Playback/Track (IMAGEM - sem pintar)
+    if (nameLower.contains('play') || nameLower.contains('track') || nameLower.contains('bt')) {
+      return Image.asset('assets/images/ic_play_back.png', width: size, height: size);
+    }
+
+    // Retorno/Monitor (ÍCONE - com cor)
+    if (nameLower.contains('ret') ||
+        nameLower.contains('mon') ||
+        nameLower.contains('wedge')) {
+      return Icon(MdiIcons.speaker, size: size, color: color);
+    }
+
+    // Efeitos (ÍCONE - com cor)
+    if (nameLower.contains('fx') ||
+        nameLower.contains('reverb') ||
+        nameLower.contains('delay') ||
+        nameLower.contains('effect')) {
+      return Icon(MdiIcons.waveform, size: size, color: color);
+    }
+
+    // Padrão (ÍCONE - com cor)
+    return Icon(MdiIcons.tuneVertical, size: size, color: color);
+  }
+
   /// Retorna um ícone baseado no nome do canal
   static IconData getIconForChannelName(String name) {
     final nameLower = name.toLowerCase();
