@@ -16,6 +16,8 @@ class MixerViewModel extends ChangeNotifier {
   StreamSubscription<OSCMessage>? _oscSubscription;
   Timer? _metersTimer;
   Timer? _renewTimer;
+  bool _isDemoMode = false;
+  int _zeroMetersCount = 0; // Contador de meters zerados consecutivos
 
   MixerViewModel(this._oscService) {
     _initializeChannels();

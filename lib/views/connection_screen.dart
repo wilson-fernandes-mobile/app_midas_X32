@@ -291,23 +291,23 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Botão de teste
-                  TextButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const TestConnectionScreen(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.bug_report, color: Color(0xFFFF723A)),
-                    label: Text(
-                      'Testar Conexão OSC',
-                      style: TextStyle(color: Colors.grey[400]),
-                    ),
-                  ),
+                  // Botão de teste (ESCONDIDO - descomente para debug)
+                  // TextButton.icon(
+                  //   onPressed: () {
+                  //     Navigator.of(context).push(
+                  //       MaterialPageRoute(
+                  //         builder: (_) => const TestConnectionScreen(),
+                  //       ),
+                  //     );
+                  //   },
+                  //   icon: const Icon(Icons.bug_report, color: Color(0xFFFF723A)),
+                  //   label: Text(
+                  //     'Testar Conexão OSC',
+                  //     style: TextStyle(color: Colors.grey[400]),
+                  //   ),
+                  // ),
 
-                  const SizedBox(height: 16),
+                  // const SizedBox(height: 16),
 
                   // Info
                   Text(
