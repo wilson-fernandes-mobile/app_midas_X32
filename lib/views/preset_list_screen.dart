@@ -405,6 +405,7 @@ class _PresetCard extends StatelessWidget {
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
             ),
             child: const Text('Deletar'),
           ),

@@ -32,7 +32,7 @@ class _MixerScreenState extends State<MixerScreen> {
       // Inicia polling de meters (VU/Peak meters em tempo real)
       // demoMode: true = Simula meters (para emuladores que não suportam)
       // demoMode: false = Usa meters reais do console
-      _viewModel?.startMetersPolling(demoMode: false);
+      _viewModel?.startMetersPolling(demoMode: true);
     });
   }
 
@@ -85,7 +85,7 @@ class _MixerScreenState extends State<MixerScreen> {
     );
   }
 
-  /// Constrói a toolbar vertical para modo landscape
+  /// Constrói a toolbar vertical para modo landscape (lado direito)
   Widget _buildVerticalToolbar(BuildContext context) {
     return Container(
       width: 60,
@@ -322,8 +322,11 @@ class _MixerScreenState extends State<MixerScreen> {
       ),
       body: Row(
         children: [
-          // Toolbar vertical em landscape
-          if (isLandscape) _buildVerticalToolbar(context),
+          // Espaço vazio à esquerda em landscape (evita câmera/alto-falante)
+          if (isLandscape) Container(
+            width: 40,
+            color: Colors.grey[900],
+          ),
           // Lista de canais
           Expanded(
             child: Consumer<MixerViewModel>(
@@ -383,6 +386,8 @@ class _MixerScreenState extends State<MixerScreen> {
               },
             ),
           ),
+          // Toolbar vertical em landscape (lado direito)
+          if (isLandscape) _buildVerticalToolbar(context),
         ],
       ),
       floatingActionButton: Consumer<MixerViewModel>(
@@ -1324,7 +1329,7 @@ class _PeakMeterPainter extends CustomPainter {
 }
 
 /// Widget de Peak Meter horizontal para o bus master
-class _PeakMeterHorizontal extends StatefulWidget {
+class _PeakMeterHorizontal extends StatelessWidget {
   final double peakLevel; // 0.0 a 1.0
 
   const _PeakMeterHorizontal({
@@ -1332,15 +1337,7 @@ class _PeakMeterHorizontal extends StatefulWidget {
   });
 
   @override
-  State<_PeakMeterHorizontal> createState() => _PeakMeterHorizontalState();
-}
-
-class _PeakMeterHorizontalState extends State<_PeakMeterHorizontal> {
-  @override
   Widget build(BuildContext context) {
-    // Usa o valor real do peakLevel (vem do ViewModel via meters)
-    final displayLevel = widget.peakLevel;
-
     return Container(
       height: 12,
       decoration: BoxDecoration(
@@ -1355,7 +1352,7 @@ class _PeakMeterHorizontalState extends State<_PeakMeterHorizontal> {
         borderRadius: BorderRadius.circular(5),
         child: CustomPaint(
           painter: _PeakMeterHorizontalPainter(
-            peakLevel: displayLevel,
+            peakLevel: peakLevel,
           ),
         ),
       ),

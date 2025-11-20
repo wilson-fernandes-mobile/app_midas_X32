@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../viewmodels/connection_viewmodel.dart';
 import 'mixer_screen.dart';
 import 'test_connection_screen.dart';
@@ -16,13 +17,22 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
   final _ipController = TextEditingController();
   final _portController = TextEditingController(text: '10023');
   bool _hasLoadedSavedConnection = false;
+  String _appVersion = '';
 
   @override
   void initState() {
     super.initState();
+    _loadAppVersion();
     // Aguarda o ViewModel carregar e então preenche os campos
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _listenToViewModel();
+    });
+  }
+
+  Future<void> _loadAppVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      _appVersion = 'v${packageInfo.version}+${packageInfo.buildNumber}';
     });
   }
 
@@ -125,24 +135,27 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.grey[900]!,
-              Colors.black,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+      body: Stack(
+        children: [
+          // Conteúdo principal
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.grey[900]!,
+                  Colors.black,
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                   // Logo/Título
                   Image.asset(
                     'assets/images/logo.png',
@@ -318,11 +331,41 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                ],
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+
+          // Versão do app no canto inferior direito
+
+          // Positioned(
+          //   bottom: 16,
+          //   left: 16,
+          //   child:
+          //   Text(
+          //     _appVersion,
+          //     style: TextStyle(
+          //       fontSize: 12,
+          //       color: Colors.grey[600],
+          //       fontWeight: FontWeight.w500,
+          //     ),
+          //   ),
+          // ),
+
+          // TEXTO DIREITO
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: Image.asset(
+              'assets/images/ic_animal_version.png',
+              width: 30,
+              height: 30,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
       ),
     );
   }
