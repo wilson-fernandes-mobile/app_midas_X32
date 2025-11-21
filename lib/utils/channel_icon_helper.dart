@@ -99,21 +99,95 @@ class ChannelIconHelper {
         nameLower.contains('guitarra') ||
         nameLower.contains('gtr') ||
         nameLower.contains('gt')) {
+
+      if ( nameLower.contains('two')
+          ||  nameLower.contains('segunda')
+          || nameLower.contains('2')
+          || nameLower.contains('dois')) {
+        return Image.asset('assets/images/ic_eletric_guitar_two.png', width: size, height: size);
+      }
       return Image.asset('assets/images/ic_electric_guitar.png', width: size, height: size);
     }
 
     // Teclados (IMAGEM - sem pintar)
     if (nameLower.contains('key') ||
-        nameLower.contains('piano') ||
-        nameLower.contains('synth') ||
         nameLower.contains('teclado')) {
       return Image.asset('assets/images/ic_teclado.png', width: size, height: size);
     }
 
-    // Percussão (ÍCONE - com cor)
+    if (nameLower.contains('synth') ||
+        nameLower.contains('synthesizer')) {
+      return Image.asset('assets/images/ic_synthesizer.png', width: size, height: size);
+    }
+
+    if (nameLower.contains('piano')) {
+      return Image.asset('assets/images/ic_piano.png', width: size, height: size);
+    }
+
+    // Acordeão (IMAGEM - sem pintar)
+    if (nameLower.contains('accordion') ||
+        nameLower.contains('acordeon') ||
+        nameLower.contains('sanfona')) {
+      return Image.asset('assets/images/ic_accordion.png', width: size, height: size);
+    }
+
+    // Instrumentos de Sopro - Saxofone (IMAGEM - sem pintar)
+    if (nameLower.contains('sax') ||
+        nameLower.contains('saxofone') ||
+        nameLower.contains('saxophone')) {
+      return Image.asset('assets/images/ic_saxophone.png', width: size, height: size);
+    }
+
+    // Instrumentos de Sopro - Trompa/French Horn (IMAGEM - sem pintar)
+    if (nameLower.contains('horn') ||
+        nameLower.contains('trompa') ||
+        nameLower.contains('french')) {
+      return Image.asset('assets/images/ic_french-horn.png', width: size, height: size);
+    }
+
+    // Instrumentos de Sopro - Tuba (IMAGEM - sem pintar)
+    if (nameLower.contains('tuba')) {
+      return Image.asset('assets/images/ic_tuba.png', width: size, height: size);
+    }
+
+    // Instrumentos de Corda - Violino (IMAGEM - sem pintar)
+    if (nameLower.contains('violin') ||
+        nameLower.contains('violino')) {
+      return Image.asset('assets/images/ic_violin.png', width: size, height: size);
+    }
+
+    // Instrumentos de Corda - Cello (IMAGEM - sem pintar)
+    if (nameLower.contains('cello') ||
+        nameLower.contains('violoncelo')) {
+      return Image.asset('assets/images/ic_cello.png', width: size, height: size);
+    }
+
+    // Instrumentos de Corda - Banjo (IMAGEM - sem pintar)
+    if (nameLower.contains('banjo')) {
+      return Image.asset('assets/images/ic_banjo.png', width: size, height: size);
+    }
+
+    // Instrumentos de Corda - Sitar (IMAGEM - sem pintar)
+    if (nameLower.contains('sitar')) {
+      return Image.asset('assets/images/ic_sitar.png', width: size, height: size);
+    }
+
+    // Percussão - Bongo (IMAGEM - sem pintar)
+    if (nameLower.contains('bongo')) {
+      return Image.asset('assets/images/ic_bongo.png', width: size, height: size);
+    }
+
+    // Percussão - Meia Lua/Pandeiro (IMAGEM - sem pintar)
+    if (nameLower.contains('meia') ||
+        nameLower.contains('lua') ||
+        nameLower.contains('pandeiro') ||
+        nameLower.contains('tambourine')) {
+      return Image.asset('assets/images/ic_meia_lua.png', width: size, height: size);
+    }
+
+    // Percussão genérica (ÍCONE - com cor)
     if (nameLower.contains('perc') ||
         nameLower.contains('conga') ||
-        nameLower.contains('bongo') ||
         nameLower.contains('shaker')) {
       return Icon(MdiIcons.musicNote, size: size, color: color);
     }

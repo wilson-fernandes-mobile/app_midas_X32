@@ -323,6 +323,9 @@ class MixerViewModel extends ChangeNotifier {
     // Salva o Mix selecionado
     await _saveSelectedMix(mixNumber);
 
+    // Aguarda um tempo para as respostas OSC chegarem e a UI carregar
+    await Future.delayed(const Duration(milliseconds: 800));
+
     if (kDebugMode) {
       print('✅ Mix $mixNumber selecionado!');
     }

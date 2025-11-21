@@ -75,7 +75,7 @@ void main(List<String> args) async {
     13: 'Bass DI',
     14: 'Bass Amp',
     15: 'Guitar 1',
-    16: 'Guitar 2',
+    16: 'GTR Segunda',
     17: 'Keys L',
     18: 'Keys R',
     19: 'Synth',

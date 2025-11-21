@@ -167,6 +167,10 @@ class PresetViewModel extends ChangeNotifier {
 
     try {
       _presets = await _presetService.loadPresets();
+
+      // Aguarda um tempo mínimo para mostrar a animação de loading
+      await Future.delayed(const Duration(milliseconds: 500));
+
       if (kDebugMode) {
         print('✅ ${_presets.length} presets carregados');
       }
