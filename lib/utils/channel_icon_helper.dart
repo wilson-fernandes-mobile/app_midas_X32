@@ -15,13 +15,28 @@ class ChannelIconHelper {
         nameLower.contains('lead') ||
         nameLower.contains('backing')) {
       // Diferencia por gênero se possível
-      if (nameLower.contains('male') || nameLower.contains('masculino') || nameLower.contains('homem')) {
-        return Image.asset('assets/images/ic_mic_male.png', width: size, height: size);
-      } else if (nameLower.contains('female') || nameLower.contains('feminino') || nameLower.contains('mulher')) {
-        return Image.asset('assets/images/ic_mic_female.png', width: size, height: size);
+      if (nameLower.contains('male') || nameLower.contains('man') || nameLower.contains('masculino') || nameLower.contains('homem')) {
+        return Image.asset('assets/images/ic_voz_male.png', width: size, height: size);
+      } else if (nameLower.contains('woman') || nameLower.contains('feminino') || nameLower.contains('mulher')) {
+        return Image.asset('assets/images/ic_voz_famale.png', width: size, height: size);
       }
       return Image.asset('assets/images/ic_mic.png', width: size, height: size);
     }
+
+
+    if (nameLower.contains('mic') ||
+        nameLower.contains('mic-backing') ||
+        nameLower.contains('microfone') ||
+        nameLower.contains('voicefone')) {
+      // Diferencia por gênero se possível
+      if (nameLower.contains('male') || nameLower.contains('man') || nameLower.contains('masculino') || nameLower.contains('homem')) {
+        return Image.asset('assets/images/ic_voz_male.png', width: size, height: size);
+      } else if (nameLower.contains('woman') || nameLower.contains('feminino') || nameLower.contains('mulher')) {
+        return Image.asset('assets/images/ic_voz_famale.png', width: size, height: size);
+      }
+      return Image.asset('assets/images/ic_mic.png', width: size, height: size);
+    }
+
 
     // Bateria - Kick/Bumbo (IMAGEM - sem pintar)
     if (nameLower.contains('kick') || nameLower.contains('bumbo')) {

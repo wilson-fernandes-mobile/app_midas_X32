@@ -60,8 +60,8 @@ void main(List<String> args) async {
 
   // Configuração dos nomes dos canais
   final channelNames = {
-    1: 'Vocal Lead',
-    2: 'Vocal BV1',
+    1: 'lead male',
+    2: 'lead feminino',
     3: 'Vocal BV2',
     4: 'Kick',
     5: 'Snare Top',

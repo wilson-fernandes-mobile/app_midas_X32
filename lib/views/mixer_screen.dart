@@ -2,6 +2,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:lottie/lottie.dart';
 import '../utils/fader_color_helper.dart';
 import '../viewmodels/mixer_viewmodel.dart';
 import '../viewmodels/connection_viewmodel.dart';
@@ -32,7 +33,7 @@ class _MixerScreenState extends State<MixerScreen> {
       // Inicia polling de meters (VU/Peak meters em tempo real)
       // demoMode: true = Simula meters (para emuladores que não suportam)
       // demoMode: false = Usa meters reais do console
-      _viewModel?.startMetersPolling(demoMode: true);
+      _viewModel?.startMetersPolling(demoMode: false);
     });
   }
 
@@ -331,60 +332,29 @@ class _MixerScreenState extends State<MixerScreen> {
           Expanded(
             child: Consumer<MixerViewModel>(
               builder: (context, viewModel, _) {
-                if (viewModel.isLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFFFF723A),
-                    ),
-                  );
-                }
-
-                // Mostra os canais mesmo sem Mix selecionado (Main LR)
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
-
-                    // Calcula quantos canais cabem na tela
-                    final channelWidth = isLandscape ? 80.0 : 110.0;
-                    final channelMargin = isLandscape ? 8.0 : 12.0; // horizontal margin * 2
-                    final totalChannelWidth = channelWidth + channelMargin;
-                    final channelsPerPage = (constraints.maxWidth / totalChannelWidth).floor();
-
-                    // Agrupa canais em páginas
-                    final channels = viewModel.channels;
-                    final pageCount = (channels.length / channelsPerPage).ceil();
-
-                    return PageView.builder(
-                      itemCount: pageCount,
-                      controller: PageController(viewportFraction: 1.0),
-                      itemBuilder: (context, pageIndex) {
-                        final startIndex = pageIndex * channelsPerPage;
-                        final endIndex = (startIndex + channelsPerPage).clamp(0, channels.length);
-                        final pageChannels = channels.sublist(startIndex, endIndex);
-
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.center, // Centraliza os canais
-                          children: pageChannels.map((channel) {
-                            return SizedBox(
-                              height: constraints.maxHeight,
-                              child: _ChannelStrip(
-                                channel: channel,
-                                onLevelChanged: (level) {
-                                  viewModel.setChannelLevel(channel.number, level);
-                                },
-                                onMuteToggled: () {
-                                  viewModel.toggleChannelMute(channel.number);
-                                },
-                              ),
-                            );
-                          }).toList(),
-                        );
-                      },
-                    );
-                  },
+                return AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 500),
+                  switchInCurve: Curves.easeIn,
+                  switchOutCurve: Curves.easeOut,
+                  child: viewModel.isLoading
+                      ? Center(
+                          key: const ValueKey('loading'),
+                          child: Lottie.asset(
+                            'assets/animation/settings_icon.json',
+                            width: 200,
+                            height: 200,
+                            fit: BoxFit.contain,
+                          ),
+                        )
+                      : _buildChannelsList(viewModel),
                 );
               },
             ),
+          ),
+          // Espaço vazio à direita em landscape (evita câmera/alto-falante)
+          if (isLandscape) Container(
+            width: 40,
+            color: Colors.grey[900],
           ),
           // Toolbar vertical em landscape (lado direito)
           if (isLandscape) _buildVerticalToolbar(context),
@@ -405,6 +375,54 @@ class _MixerScreenState extends State<MixerScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
+
+  Widget _buildChannelsList(MixerViewModel viewModel) {
+    return LayoutBuilder(
+      key: const ValueKey('channels'),
+      builder: (context, constraints) {
+        final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
+        // Calcula quantos canais cabem na tela
+        final channelWidth = isLandscape ? 80.0 : 110.0;
+        final channelMargin = isLandscape ? 8.0 : 12.0; // horizontal margin * 2
+        final totalChannelWidth = channelWidth + channelMargin;
+        final channelsPerPage = (constraints.maxWidth / totalChannelWidth).floor();
+
+        // Agrupa canais em páginas
+        final channels = viewModel.channels;
+        final pageCount = (channels.length / channelsPerPage).ceil();
+
+        return PageView.builder(
+          itemCount: pageCount,
+          controller: PageController(viewportFraction: 1.0),
+          itemBuilder: (context, pageIndex) {
+            final startIndex = pageIndex * channelsPerPage;
+            final endIndex = (startIndex + channelsPerPage).clamp(0, channels.length);
+            final pageChannels = channels.sublist(startIndex, endIndex);
+
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center, // Centraliza os canais
+              children: pageChannels.map((channel) {
+                return SizedBox(
+                  height: constraints.maxHeight,
+                  child: _ChannelStrip(
+                    channel: channel,
+                    onLevelChanged: (level) {
+                      viewModel.setChannelLevel(channel.number, level);
+                    },
+                    onMuteToggled: () {
+                      viewModel.toggleChannelMute(channel.number);
+                    },
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        );
+      },
+    );
+  }
+
 }
 
 /// Widget de um canal (fader strip)

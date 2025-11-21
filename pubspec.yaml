@@ -50,6 +50,7 @@ dependencies:
   # Material Design Icons (ícones extras como guitarra, bateria, etc.)
   material_design_icons_flutter: ^7.0.7296
   package_info_plus: ^9.0.0
+  lottie: ^3.3.1
 
 dev_dependencies:
   flutter_test:
@@ -83,6 +84,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icon/
+    - assets/animation/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

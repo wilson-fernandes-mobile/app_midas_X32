@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import '../viewmodels/preset_viewmodel.dart';
 import '../viewmodels/mixer_viewmodel.dart';
 import '../models/preset.dart';
@@ -35,52 +36,59 @@ class PresetListScreen extends StatelessWidget {
       ),
       body: Consumer<PresetViewModel>(
         builder: (context, viewModel, child) {
-          if (viewModel.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFFFF723A),
-              ),
-            );
-          }
-
-          if (viewModel.presets.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.bookmark_border,
-                    size: 80,
-                    color: Colors.grey[700],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Nenhum preset salvo',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[500],
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            switchInCurve: Curves.easeIn,
+            switchOutCurve: Curves.easeOut,
+            child: viewModel.isLoading
+                ? Center(
+                    key: const ValueKey('loading'),
+                    child: Lottie.asset(
+                      'assets/animation/settings_icon.json',
+                      width: 200,
+                      height: 200,
+                      fit: BoxFit.contain,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Ajuste os faders e salve um preset!',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: viewModel.presets.length,
-            itemBuilder: (context, index) {
-              final preset = viewModel.presets[index];
-              return _PresetCard(preset: preset);
-            },
+                  )
+                : viewModel.presets.isEmpty
+                    ? Center(
+                        key: const ValueKey('empty'),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.bookmark_border,
+                              size: 80,
+                              color: Colors.grey[700],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Nenhum preset salvo',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Ajuste os faders e salve um preset!',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        key: const ValueKey('list'),
+                        padding: const EdgeInsets.all(16),
+                        itemCount: viewModel.presets.length,
+                        itemBuilder: (context, index) {
+                          final preset = viewModel.presets[index];
+                          return _PresetCard(preset: preset);
+                        },
+                      ),
           );
         },
       ),
