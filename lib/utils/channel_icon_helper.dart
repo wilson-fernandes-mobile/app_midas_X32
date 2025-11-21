@@ -29,9 +29,9 @@ class ChannelIconHelper {
         nameLower.contains('voicefone')) {
       // Diferencia por gênero se possível
       if (nameLower.contains('male') || nameLower.contains('man') || nameLower.contains('masculino') || nameLower.contains('homem')) {
-        return Image.asset('assets/images/ic_voz_male.png', width: size, height: size);
+        return Image.asset('assets/images/ic_mic_male.png', width: size, height: size);
       } else if (nameLower.contains('woman') || nameLower.contains('feminino') || nameLower.contains('mulher')) {
-        return Image.asset('assets/images/ic_voz_famale.png', width: size, height: size);
+        return Image.asset('assets/images/ic_mic_female.png', width: size, height: size);
       }
       return Image.asset('assets/images/ic_mic.png', width: size, height: size);
     }
