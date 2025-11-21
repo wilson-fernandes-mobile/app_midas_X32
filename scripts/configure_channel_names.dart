@@ -62,7 +62,7 @@ void main(List<String> args) async {
   final channelNames = {
     1: 'lead male',
     2: 'lead feminino',
-    3: 'Vocal BV2',
+    3: 'mic man',
     4: 'Kick',
     5: 'Snare Top',
     6: 'Snare Btm',

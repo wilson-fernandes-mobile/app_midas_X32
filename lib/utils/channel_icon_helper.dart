@@ -11,7 +11,6 @@ class ChannelIconHelper {
     // Vocais - Microfone (IMAGEM - sem pintar)
     if (nameLower.contains('voc') ||
         nameLower.contains('vocal') ||
-        nameLower.contains('mic') ||
         nameLower.contains('lead') ||
         nameLower.contains('backing')) {
       // Diferencia por gênero se possível
