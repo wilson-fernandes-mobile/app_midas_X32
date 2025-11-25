@@ -196,8 +196,24 @@ class OSCService {
 
   /// Subscreve para receber atualizações automáticas
   Future<void> subscribe() async {
+    if (kDebugMode) {
+      print('📡 Enviando /xremote...');
+    }
     await sendMessage('/xremote');
-    await sendMessage('/subscribe');
+
+    // Subscreve para receber meters automaticamente
+    // Formato: /batchsubscribe ,ssiiii nome caminho inicio fim intervalo
+    // Baseado na documentação: /batchsubscribe ,ssiii yyy /meters/6 0 0 40
+    if (kDebugMode) {
+      print('📊 Enviando /batchsubscribe para meters...');
+      print('   Parâmetros: [\'meters\', \'/meters/1\', 0, 0, 40]');
+    }
+    // Subscreve /meters/1 (canais 1-32) com intervalo de 40ms
+    await sendMessage('/batchsubscribe', ['meters', '/meters/1', 0, 0, 40]);
+
+    if (kDebugMode) {
+      print('✅ Subscrição enviada!');
+    }
   }
 
   /// Cancela subscrição
@@ -227,7 +243,7 @@ class OSCService {
   }
 
   /// Processa blob binário de meters
-  /// Cada canal = 2 bytes (16-bit signed integer)
+  /// Cada canal = 2 bytes (16-bit unsigned integer, 0-1023)
   /// Retorna Map<int, double> onde key = channel number, value = peak level (0.0-1.0)
   Map<int, double> parseMetersBlob(List<int> blob) {
     final meters = <int, double>{};
@@ -242,10 +258,9 @@ class OSCService {
         final lowByte = blob[i + 1];
         final rawValue = (highByte << 8) | lowByte;
 
-        // Converte de signed 16-bit para float (0.0-1.0)
-        // Valores negativos são tratados como 0
-        final signedValue = rawValue > 32767 ? rawValue - 65536 : rawValue;
-        final normalizedValue = (signedValue / 32768.0).clamp(0.0, 1.0);
+        // X32/M32 usa valores de 0 a 1023 (10-bit)
+        // Normaliza para 0.0-1.0
+        final normalizedValue = (rawValue / 1023.0).clamp(0.0, 1.0);
 
         // Channel number (1-based)
         final channelNumber = channelIndex + 1;

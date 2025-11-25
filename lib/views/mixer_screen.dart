@@ -12,6 +12,25 @@ import '../utils/channel_icon_helper.dart';
 import 'connection_screen.dart';
 import 'preset_list_screen.dart';
 
+/// Localização customizada do FAB para landscape (com offset à esquerda da toolbar)
+class _CustomFabLocation extends FloatingActionButtonLocation {
+  const _CustomFabLocation();
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    // Posição em landscape: sobrepondo a toolbar, com margem bottom maior
+    final double fabX = scaffoldGeometry.scaffoldSize.width -
+                        scaffoldGeometry.floatingActionButtonSize.width -
+                        8.0; // margem direita pequena (fica em cima da toolbar)
+
+    final double fabY = scaffoldGeometry.scaffoldSize.height -
+                        scaffoldGeometry.floatingActionButtonSize.height -
+                        24.0; // margem inferior maior
+
+    return Offset(fabX, fabY);
+  }
+}
+
 /// Tela principal do mixer
 class MixerScreen extends StatefulWidget {
   const MixerScreen({super.key});
@@ -351,11 +370,6 @@ class _MixerScreenState extends State<MixerScreen> {
               },
             ),
           ),
-          // Espaço vazio à direita em landscape (evita câmera/alto-falante)
-          if (isLandscape) Container(
-            width: 40,
-            color: Colors.grey[900],
-          ),
           // Toolbar vertical em landscape (lado direito)
           if (isLandscape) _buildVerticalToolbar(context),
         ],
@@ -372,7 +386,10 @@ class _MixerScreenState extends State<MixerScreen> {
           );
         },
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      // Em landscape, usa localização customizada para não ficar atrás da toolbar
+      floatingActionButtonLocation: isLandscape
+          ? const _CustomFabLocation()
+          : FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -665,7 +682,7 @@ class _ChannelStrip extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      isMuted ? 'MUTE' : 'ON',
+                      isMuted ? 'OFF' : 'ON',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 11,

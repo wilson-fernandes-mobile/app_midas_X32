@@ -16,8 +16,10 @@ class MixerViewModel extends ChangeNotifier {
   StreamSubscription<OSCMessage>? _oscSubscription;
   Timer? _metersTimer;
   Timer? _renewTimer;
+  Timer? _decayTimer;
   bool _isDemoMode = false;
   int _zeroMetersCount = 0; // Contador de meters zerados consecutivos
+  DateTime? _lastMetersReceived; // Timestamp do último meter recebido
 
   MixerViewModel(this._oscService) {
     _initializeChannels();
@@ -96,14 +98,23 @@ class MixerViewModel extends ChangeNotifier {
   void _handleOSCMessage(OSCMessage message) {
     final address = message.address;
 
-    // Debug: mostra mensagens recebidas (exceto meters para não poluir)
-    if (kDebugMode && !address.startsWith('/meters/')) {
-      print('🎛️ MixerVM recebeu: $address ${message.arguments}');
+    // Debug: mostra TODAS as mensagens recebidas (incluindo meters)
+    if (kDebugMode) {
+      if (address.startsWith('/meters/')) {
+        print('📊 OSC: $address (${message.arguments.length} args)');
+      } else {
+        print('🎛️ OSC: $address ${message.arguments}');
+      }
     }
 
     // Processa meters dos canais (níveis de áudio em tempo real)
     if (address == '/meters/1' && message.arguments.isNotEmpty) {
       final arg = message.arguments[0];
+
+      // DEBUG: Log quando recebe meters
+      if (kDebugMode) {
+        print('📊 METERS recebido! Tipo: ${arg.runtimeType}, Args: ${message.arguments.length}');
+      }
 
       // O argumento pode ser Uint8List ou List<int>
       List<int>? blob;
@@ -115,8 +126,22 @@ class MixerViewModel extends ChangeNotifier {
       }
 
       if (blob != null) {
+        if (kDebugMode) {
+          print('   Blob size: ${blob.length} bytes');
+        }
         final meters = _oscService.parseMetersBlob(blob);
+        if (kDebugMode) {
+          print('   Meters parsed: ${meters.length} canais');
+          // Mostra os primeiros 4 canais
+          meters.entries.take(4).forEach((entry) {
+            print('   Ch${entry.key}: ${(entry.value * 100).toStringAsFixed(1)}%');
+          });
+        }
         _updateChannelPeakLevels(meters);
+      } else {
+        if (kDebugMode) {
+          print('   ⚠️  Blob é null!');
+        }
       }
       return; // Não precisa processar mais nada
     }
@@ -255,6 +280,9 @@ class MixerViewModel extends ChangeNotifier {
   /// Atualiza os peak levels de múltiplos canais (vindo dos meters)
   void _updateChannelPeakLevels(Map<int, double> meters) {
     bool hasChanges = false;
+
+    // Atualiza timestamp do último meter recebido
+    _lastMetersReceived = DateTime.now();
 
     for (final entry in meters.entries) {
       final channelNumber = entry.key;
@@ -424,6 +452,7 @@ class MixerViewModel extends ChangeNotifier {
     // Cancela timers anteriores se existirem
     _metersTimer?.cancel();
     _renewTimer?.cancel();
+    _decayTimer?.cancel();
 
     if (kDebugMode) {
       print('📊 Iniciando polling de meters (50ms = ~20Hz)');
@@ -433,6 +462,9 @@ class MixerViewModel extends ChangeNotifier {
         print('   🎚️  MODO REAL: Usando meters do console');
       }
     }
+
+    _isDemoMode = demoMode;
+    _lastMetersReceived = DateTime.now();
 
     if (demoMode) {
       // MODO DEMO: Simula meters com valores aleatórios
@@ -453,6 +485,44 @@ class MixerViewModel extends ChangeNotifier {
 
       // Envia o primeiro renew imediatamente
       _oscService.renewMeters();
+    }
+
+    // Timer de decay: Zera meters se não receber dados por 500ms
+    _decayTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      _applyMetersDecay();
+    });
+  }
+
+  /// Aplica decay (decaimento) aos meters quando não recebe dados novos
+  void _applyMetersDecay() {
+    if (_lastMetersReceived == null) return;
+
+    final timeSinceLastMeters = DateTime.now().difference(_lastMetersReceived!);
+
+    // Se passou mais de 500ms sem receber meters, começa a decair
+    if (timeSinceLastMeters.inMilliseconds > 500) {
+      bool hasChanges = false;
+
+      // Zera todos os peak levels
+      for (int i = 0; i < _channels.length; i++) {
+        if (_channels[i].peakLevel > 0.0) {
+          _channels[i] = _channels[i].copyWith(peakLevel: 0.0);
+          hasChanges = true;
+        }
+      }
+
+      // Zera peak level do bus
+      if (_selectedMix != null && _selectedMix!.peakLevel > 0.0) {
+        _selectedMix = _selectedMix!.copyWith(peakLevel: 0.0);
+        hasChanges = true;
+      }
+
+      if (hasChanges) {
+        if (kDebugMode) {
+          print('⏱️  Meters zerados (timeout: ${timeSinceLastMeters.inMilliseconds}ms)');
+        }
+        notifyListeners();
+      }
     }
   }
 
@@ -500,6 +570,8 @@ class MixerViewModel extends ChangeNotifier {
     _metersTimer = null;
     _renewTimer?.cancel();
     _renewTimer = null;
+    _decayTimer?.cancel();
+    _decayTimer = null;
   }
 
   @override

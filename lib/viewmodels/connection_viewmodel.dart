@@ -93,6 +93,9 @@ class ConnectionViewModel extends ChangeNotifier {
         );
         await _saveConnection(ipAddress, port);
         _errorMessage = null;
+
+        // Subscreve para receber atualizações automáticas
+        await _oscService.subscribe();
       } else {
         _errorMessage = 'Não foi possível conectar ao console';
         _consoleInfo = _consoleInfo.copyWith(isConnected: false);
