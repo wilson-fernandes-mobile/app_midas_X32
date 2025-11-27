@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
@@ -41,6 +42,7 @@ class MixerScreen extends StatefulWidget {
 
 class _MixerScreenState extends State<MixerScreen> {
   MixerViewModel? _viewModel;
+  final PageController _pageController = PageController(viewportFraction: 1.0);
 
   @override
   void initState() {
@@ -66,6 +68,7 @@ class _MixerScreenState extends State<MixerScreen> {
   void dispose() {
     // Para polling de meters quando sair da tela
     _viewModel?.stopMetersPolling();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -409,32 +412,59 @@ class _MixerScreenState extends State<MixerScreen> {
         final channels = viewModel.channels;
         final pageCount = (channels.length / channelsPerPage).ceil();
 
-        return PageView.builder(
-          itemCount: pageCount,
-          controller: PageController(viewportFraction: 1.0),
-          itemBuilder: (context, pageIndex) {
-            final startIndex = pageIndex * channelsPerPage;
-            final endIndex = (startIndex + channelsPerPage).clamp(0, channels.length);
-            final pageChannels = channels.sublist(startIndex, endIndex);
+        // Listener para scroll com mouse (Windows/Desktop)
+        return Listener(
+          onPointerSignal: (pointerSignal) {
+            if (pointerSignal is PointerScrollEvent) {
+              final currentPage = _pageController.page ?? 0;
 
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center, // Centraliza os canais
-              children: pageChannels.map((channel) {
-                return SizedBox(
-                  height: constraints.maxHeight,
-                  child: _ChannelStrip(
-                    channel: channel,
-                    onLevelChanged: (level) {
-                      viewModel.setChannelLevel(channel.number, level);
-                    },
-                    onMuteToggled: () {
-                      viewModel.toggleChannelMute(channel.number);
-                    },
-                  ),
+              // Scroll para direita (delta positivo) ou esquerda (delta negativo)
+              if (pointerSignal.scrollDelta.dy > 0) {
+                // Scroll down = próxima página
+                final nextPage = (currentPage + 1).clamp(0.0, (pageCount - 1).toDouble());
+                _pageController.animateToPage(
+                  nextPage.toInt(),
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
                 );
-              }).toList(),
-            );
+              } else if (pointerSignal.scrollDelta.dy < 0) {
+                // Scroll up = página anterior
+                final prevPage = (currentPage - 1).clamp(0.0, (pageCount - 1).toDouble());
+                _pageController.animateToPage(
+                  prevPage.toInt(),
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              }
+            }
           },
+          child: PageView.builder(
+            itemCount: pageCount,
+            controller: _pageController,
+            itemBuilder: (context, pageIndex) {
+              final startIndex = pageIndex * channelsPerPage;
+              final endIndex = (startIndex + channelsPerPage).clamp(0, channels.length);
+              final pageChannels = channels.sublist(startIndex, endIndex);
+
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center, // Centraliza os canais
+                children: pageChannels.map((channel) {
+                  return SizedBox(
+                    height: constraints.maxHeight,
+                    child: _ChannelStrip(
+                      channel: channel,
+                      onLevelChanged: (level) {
+                        viewModel.setChannelLevel(channel.number, level);
+                      },
+                      onMuteToggled: () {
+                        viewModel.toggleChannelMute(channel.number);
+                      },
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
         );
       },
     );

@@ -57,7 +57,7 @@ void main(List<String> arguments) async {
   await ProcessSignal.sigint.watch().first;
   print('');
   print('🛑 Encerrando simulador...');
-  timer.cancel();
+  //timer.cancel();
   socket.close();
   print('✅ Simulador encerrado. Total de mensagens enviadas: $messageCount');
 }

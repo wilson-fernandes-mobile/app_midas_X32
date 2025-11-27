@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
@@ -8,8 +9,35 @@ import '../models/preset.dart';
 import '../widgets/preset_dialog.dart';
 
 /// Tela de listagem e gerenciamento de presets
-class PresetListScreen extends StatelessWidget {
+class PresetListScreen extends StatefulWidget {
   const PresetListScreen({super.key});
+
+  @override
+  State<PresetListScreen> createState() => _PresetListScreenState();
+}
+
+class _PresetListScreenState extends State<PresetListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Força orientação portrait (vertical apenas)
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
+
+  @override
+  void dispose() {
+    // Restaura orientações ao sair da tela
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

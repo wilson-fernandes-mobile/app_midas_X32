@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../viewmodels/connection_viewmodel.dart';
@@ -22,6 +23,11 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
   @override
   void initState() {
     super.initState();
+    // Força orientação portrait (vertical apenas)
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     _loadAppVersion();
     // Aguarda o ViewModel carregar e então preenche os campos
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -87,6 +93,14 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
 
   @override
   void dispose() {
+    // Restaura orientações ao sair da tela
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
     // Remove listener se ainda estiver registrado
     try {
       final viewModel = context.read<ConnectionViewModel>();
