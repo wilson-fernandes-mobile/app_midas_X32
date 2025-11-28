@@ -1,11 +1,11 @@
 ; Script de instalação Inno Setup para CCL Midas
 ; Gerado automaticamente
 
-#define MyAppName "CCL Midas"
+#define MyAppName "MixBot"
 #define MyAppVersion "1.1.1"
 #define MyAppPublisher "CCL"
 #define MyAppURL "https://github.com/seu-usuario/app_midas_X32"
-#define MyAppExeName "cclmidas.exe"
+#define MyAppExeName "mixbot.exe"
 
 [Setup]
 ; Nome e versão do app
