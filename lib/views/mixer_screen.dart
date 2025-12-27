@@ -577,7 +577,7 @@ class _ChannelStrip extends StatelessWidget {
               _levelToDb(channel.level),
               style: TextStyle(
                 color: isMuted ? Colors.grey[600] : FaderColorHelper.getLevelColor(channel.level),
-                fontSize: 13,
+                fontSize: isLandscape ? 11 : 13,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'monospace',
               ),
@@ -622,9 +622,10 @@ class _ChannelStrip extends StatelessWidget {
                                 isMuted: isMuted,
                                 level: channel.level,
                                 levelColor: FaderColorHelper.getLevelColor(channel.level),
+                                isLandscape: isLandscape,
                               ),
-                              overlayShape: const RoundSliderOverlayShape(
-                                overlayRadius: 24,
+                              overlayShape: RoundSliderOverlayShape(
+                                overlayRadius: isLandscape ? 18 : 24,
                               ),
                               activeTrackColor: Colors.transparent,
                               inactiveTrackColor: Colors.transparent,
@@ -668,7 +669,7 @@ class _ChannelStrip extends StatelessWidget {
             '$levelPercent%',
             style: TextStyle(
               color: isMuted ? Colors.grey[700] : Colors.grey[400],
-              fontSize: 11,
+              fontSize: isLandscape ? 9 : 11,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -971,16 +972,21 @@ class _CustomThumbShape extends SliderComponentShape {
   final bool isMuted;
   final double level;
   final Color levelColor;
+  final bool isLandscape;
 
   const _CustomThumbShape({
     required this.isMuted,
     required this.level,
     required this.levelColor,
+    this.isLandscape = false,
   });
 
   @override
   Size getPreferredSize(bool isEnabled, bool isDiscrete) {
-    return const Size(60, 24);
+    // Thumb menor em landscape
+    return isLandscape
+        ? const Size(45, 18)  // 75% do tamanho original
+        : const Size(60, 24);
   }
 
   @override
@@ -1000,20 +1006,25 @@ class _CustomThumbShape extends SliderComponentShape {
   }) {
     final Canvas canvas = context.canvas;
 
+    // Tamanhos responsivos (menores em landscape)
+    final thumbWidth = isLandscape ? 42.0 : 56.0;
+    final thumbHeight = isLandscape ? 16.5 : 22.0;
+    final borderRadius = isLandscape ? 8.25 : 11.0;
+
     // Sombra
     final shadowPaint = Paint()
       ..color = Colors.black.withOpacity(0.3)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
 
     final shadowRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: center + const Offset(0, 2), width: 56, height: 22),
-      const Radius.circular(11),
+      Rect.fromCenter(center: center + const Offset(0, 2), width: thumbWidth, height: thumbHeight),
+      Radius.circular(borderRadius),
     );
     canvas.drawRRect(shadowRect, shadowPaint);
 
     // Fundo do thumb (gradiente)
-    final rect = Rect.fromCenter(center: center, width: 56, height: 22);
-    final rRect = RRect.fromRectAndRadius(rect, const Radius.circular(11));
+    final rect = Rect.fromCenter(center: center, width: thumbWidth, height: thumbHeight);
+    final rRect = RRect.fromRectAndRadius(rect, Radius.circular(borderRadius));
 
     final gradient = LinearGradient(
       begin: Alignment.topCenter,
@@ -1036,17 +1047,20 @@ class _CustomThumbShape extends SliderComponentShape {
 
     canvas.drawRRect(rRect, borderPaint);
 
-    // Linhas decorativas (grip)
+    // Linhas decorativas (grip) - menores em landscape
     final gripPaint = Paint()
       ..color = Colors.white.withOpacity(0.3)
-      ..strokeWidth = 1.5
+      ..strokeWidth = isLandscape ? 1.0 : 1.5
       ..strokeCap = StrokeCap.round;
 
+    final gripSpacing = isLandscape ? 4.5 : 6.0;
+    final gripHeight = isLandscape ? 4.5 : 6.0;
+
     for (int i = -1; i <= 1; i++) {
-      final x = center.dx + (i * 6);
+      final x = center.dx + (i * gripSpacing);
       canvas.drawLine(
-        Offset(x, center.dy - 6),
-        Offset(x, center.dy + 6),
+        Offset(x, center.dy - gripHeight),
+        Offset(x, center.dy + gripHeight),
         gripPaint,
       );
     }
