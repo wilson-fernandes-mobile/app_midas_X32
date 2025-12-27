@@ -101,7 +101,12 @@ class MixerViewModel extends ChangeNotifier {
     // Debug: mostra TODAS as mensagens recebidas (incluindo meters)
     if (kDebugMode) {
       if (address.startsWith('/meters/')) {
-        print('📊 OSC: $address (${message.arguments.length} args)');
+        // Mostra meters recebidos com mais detalhes
+        final argType = message.arguments.isNotEmpty ? message.arguments[0].runtimeType : 'vazio';
+        final argSize = message.arguments.isNotEmpty && message.arguments[0] is List
+            ? (message.arguments[0] as List).length
+            : 0;
+        print('📊 OSC METERS: $address | Args: ${message.arguments.length} | Tipo: $argType | Size: $argSize bytes');
       } else {
         print('🎛️ OSC: $address ${message.arguments}');
       }
@@ -477,14 +482,28 @@ class MixerViewModel extends ChangeNotifier {
         _oscService.requestMeters();
       });
 
-      // IMPORTANTE: X32/M32 requer renovação de meters a cada 10 segundos
-      // Envia /renew a cada 9 segundos para garantir
+      // IMPORTANTE: X32/M32 requer /xremote a cada 10 segundos para manter conexão
+      // Envia /xremote a cada 9 segundos para garantir
       _renewTimer = Timer.periodic(const Duration(seconds: 9), (timer) {
+        if (kDebugMode) {
+          print('🔄 Enviando /xremote (keep-alive)');
+        }
         _oscService.renewMeters();
       });
 
-      // Envia o primeiro renew imediatamente
+      // Envia o primeiro /xremote imediatamente
+      if (kDebugMode) {
+        print('🔄 Enviando /xremote inicial');
+      }
       _oscService.renewMeters();
+
+      // Aguarda 100ms e solicita meters pela primeira vez
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (kDebugMode) {
+          print('📊 Solicitando meters inicial');
+        }
+        _oscService.requestMeters();
+      });
     }
 
     // Timer de decay: Zera meters se não receber dados por 500ms

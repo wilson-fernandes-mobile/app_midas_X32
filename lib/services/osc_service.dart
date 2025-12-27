@@ -237,9 +237,10 @@ class OSCService {
   /// Segundo o protocolo OSC do X32/M32, meters precisam ser renovados
   Future<void> renewMeters() async {
     if (kDebugMode) {
-      print('🔄 Renovando subscrição de meters (/renew)');
+      print('🔄 Renovando subscrição de meters (/xremote)');
     }
-    await sendMessage('/renew', ['meters']);
+    // X32/M32 usa /xremote para manter a conexão ativa e receber meters
+    await sendMessage('/xremote');
   }
 
   /// Processa blob binário de meters
@@ -247,6 +248,13 @@ class OSCService {
   /// Retorna Map<int, double> onde key = channel number, value = peak level (0.0-1.0)
   Map<int, double> parseMetersBlob(List<int> blob) {
     final meters = <int, double>{};
+
+    if (kDebugMode) {
+      print('🔍 parseMetersBlob: Recebido ${blob.length} bytes');
+      // Mostra os primeiros 16 bytes em hexadecimal
+      final preview = blob.take(16).map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ');
+      print('   Primeiros bytes (hex): $preview');
+    }
 
     try {
       // Cada canal usa 2 bytes (16-bit big-endian)
@@ -274,11 +282,16 @@ class OSCService {
         // Log apenas alguns canais para não poluir
         final ch1 = meters[1]?.toStringAsFixed(2) ?? '0.00';
         final ch2 = meters[2]?.toStringAsFixed(2) ?? '0.00';
-        print('📊 Meters: Ch1=$ch1, Ch2=$ch2, ... (${meters.length} canais)');
+        final ch3 = meters[3]?.toStringAsFixed(2) ?? '0.00';
+        final ch4 = meters[4]?.toStringAsFixed(2) ?? '0.00';
+        print('📊 Meters parsed: Ch1=$ch1, Ch2=$ch2, Ch3=$ch3, Ch4=$ch4 (${meters.length} canais total)');
+      } else if (kDebugMode) {
+        print('⚠️  Nenhum meter foi parseado!');
       }
     } catch (e) {
       if (kDebugMode) {
         print('❌ Erro ao processar meters blob: $e');
+        print('   Stack trace: ${StackTrace.current}');
       }
     }
 

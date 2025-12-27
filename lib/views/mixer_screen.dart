@@ -139,7 +139,7 @@ class _MixerScreenState extends State<MixerScreen> {
                           presetViewModel.clearAppliedPreset();
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Auto-save desativado'),
+                              content: Text('Auto-save desativado!'),
                               duration: Duration(seconds: 2),
                             ),
                           );
@@ -188,7 +188,7 @@ class _MixerScreenState extends State<MixerScreen> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('✅ Informações recarregadas!'),
+                    content: Text('Informações recarregadas!'),
                     duration: Duration(seconds: 2),
                     backgroundColor: Colors.green,
                   ),
@@ -327,7 +327,7 @@ class _MixerScreenState extends State<MixerScreen> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('✅ Informações recarregadas!'),
+                    content: Text('Informações recarregadas!'),
                     duration: Duration(seconds: 2),
                     backgroundColor: Colors.green,
                   ),

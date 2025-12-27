@@ -14,9 +14,18 @@ class ChannelIconHelper {
         nameLower.contains('lead') ||
         nameLower.contains('backing')) {
       // Diferencia por gênero se possível
-      if (nameLower.contains('male') || nameLower.contains('man') || nameLower.contains('masculino') || nameLower.contains('homem')) {
+      if (nameLower.contains('julio') || nameLower.contains('juliao') ||
+          nameLower.contains('caio') || nameLower.contains('lucas') || nameLower.contains('vini') ||
+          nameLower.contains('rica') || nameLower.contains('lucao') || nameLower.contains('lucas') ||
+          nameLower.contains('ricardo') || nameLower.contains('mayke') || nameLower.contains('male') ||
+          nameLower.contains('man') || nameLower.contains('masculino') || nameLower.contains('homem')) {
         return Image.asset('assets/images/ic_voz_male.png', width: size, height: size);
-      } else if (nameLower.contains('woman') || nameLower.contains('feminino') || nameLower.contains('mulher')) {
+      } else if (nameLower.contains('loren') || nameLower.contains('maria') ||
+          nameLower.contains('marina') || nameLower.contains('mariana') ||
+          nameLower.contains('mariana') || nameLower.contains('graze') ||
+          nameLower.contains('carla') ||nameLower.contains('karla') || nameLower.contains('fe') ||
+          nameLower.contains('fernanda') || nameLower.contains('helen') ||
+          nameLower.contains('woman') || nameLower.contains('feminino') || nameLower.contains('mulher')) {
         return Image.asset('assets/images/ic_voz_famale.png', width: size, height: size);
       }
       return Image.asset('assets/images/ic_mic.png', width: size, height: size);
@@ -28,9 +37,16 @@ class ChannelIconHelper {
         nameLower.contains('microfone') ||
         nameLower.contains('voicefone')) {
       // Diferencia por gênero se possível
-      if (nameLower.contains('male') || nameLower.contains('man') || nameLower.contains('masculino') || nameLower.contains('homem')) {
+      if (nameLower.contains('julio') || nameLower.contains('juliao') ||
+          nameLower.contains('caio') || nameLower.contains('lucas') || nameLower.contains('vini') ||
+          nameLower.contains('rica') || nameLower.contains('lucao') || nameLower.contains('lucas') ||
+          nameLower.contains('ricardo') || nameLower.contains('mayke') || nameLower.contains('male') || nameLower.contains('man') || nameLower.contains('masculino') || nameLower.contains('homem')) {
         return Image.asset('assets/images/ic_mic_male.png', width: size, height: size);
-      } else if (nameLower.contains('woman') || nameLower.contains('feminino') || nameLower.contains('mulher')) {
+      } else if (nameLower.contains('loren') || nameLower.contains('maria') ||
+          nameLower.contains('marina') || nameLower.contains('mariana') ||
+          nameLower.contains('mariana') || nameLower.contains('graze') ||
+          nameLower.contains('carla') ||nameLower.contains('karla') || nameLower.contains('fe') ||
+          nameLower.contains('fernanda') || nameLower.contains('helen') || nameLower.contains('woman') || nameLower.contains('feminino') || nameLower.contains('mulher')) {
         return Image.asset('assets/images/ic_mic_female.png', width: size, height: size);
       }
       return Image.asset('assets/images/ic_mic.png', width: size, height: size);

@@ -1,0 +1,4 @@
+# Roda o script para renomear os canais.
+
+flutter pub run scripts/configure_channel_names.dart 192.168.1.100 10023
+
