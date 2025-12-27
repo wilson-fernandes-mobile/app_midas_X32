@@ -61,7 +61,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
 
     final viewModel = context.read<ConnectionViewModel>();
 
-    print('🔍 ConnectionScreen: Verificando IP salvo...');
+    print('ConnectionScreen: Verificando IP salvo...');
     print('   IP do ViewModel: "${viewModel.consoleInfo.ipAddress}"');
     print('   Porta do ViewModel: ${viewModel.consoleInfo.port}');
 
@@ -87,7 +87,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
       // Remove o listener após carregar
       viewModel.removeListener(_onViewModelChanged);
     } else {
-      print('⚠️  Nenhum IP salvo para preencher (ainda)');
+      print('Nenhum IP salvo para preencher (ainda)');
     }
   }
 

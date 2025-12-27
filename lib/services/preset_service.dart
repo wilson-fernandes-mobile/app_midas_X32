@@ -14,7 +14,7 @@ class PresetService {
       final presetsJson = prefs.getStringList(_presetsKey) ?? [];
 
       if (kDebugMode) {
-        print('💾 Carregando ${presetsJson.length} presets salvos...');
+        print('Carregando ${presetsJson.length} presets salvos...');
       }
 
       final presets = presetsJson
@@ -23,7 +23,7 @@ class PresetService {
               return Preset.fromJsonString(jsonString);
             } catch (e) {
               if (kDebugMode) {
-                print('⚠️  Erro ao carregar preset: $e');
+                print('Erro ao carregar preset: $e');
               }
               return null;
             }
@@ -35,13 +35,13 @@ class PresetService {
       presets.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
       if (kDebugMode) {
-        print('✅ ${presets.length} presets carregados com sucesso');
+        print('${presets.length} presets carregados com sucesso');
       }
 
       return presets;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Erro ao carregar presets: $e');
+        print('Erro ao carregar presets: $e');
       }
       return [];
     }
@@ -65,7 +65,7 @@ class PresetService {
         // Adiciona novo preset
         presets.add(preset);
         if (kDebugMode) {
-          print('💾 Salvando novo preset: ${preset.name}');
+          print('Salvando novo preset: ${preset.name}');
         }
       }
 
@@ -75,13 +75,13 @@ class PresetService {
       await prefs.setStringList(_presetsKey, presetsJson);
 
       if (kDebugMode) {
-        print('✅ Preset salvo com sucesso!');
+        print('Preset salvo com sucesso!');
       }
 
       return true;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Erro ao salvar preset: $e');
+        print('Erro ao salvar preset: $e');
       }
       return false;
     }
@@ -98,7 +98,7 @@ class PresetService {
 
       if (presets.length == initialLength) {
         if (kDebugMode) {
-          print('⚠️  Preset não encontrado: $presetId');
+          print('Preset não encontrado: $presetId');
         }
         return false;
       }
@@ -115,7 +115,7 @@ class PresetService {
       return true;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Erro ao deletar preset: $e');
+        print('Erro ao deletar preset: $e');
       }
       return false;
     }
@@ -131,7 +131,7 @@ class PresetService {
       );
     } catch (e) {
       if (kDebugMode) {
-        print('⚠️  Preset não encontrado: $presetId');
+        print('Preset não encontrado: $presetId');
       }
       return null;
     }
@@ -156,13 +156,13 @@ class PresetService {
       await prefs.remove(_presetsKey);
 
       if (kDebugMode) {
-        print('🗑️  Todos os presets foram removidos');
+        print('Todos os presets foram removidos');
       }
 
       return true;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Erro ao limpar presets: $e');
+        print('Erro ao limpar presets: $e');
       }
       return false;
     }
@@ -176,7 +176,7 @@ class PresetService {
       return jsonEncode(presetsJson);
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Erro ao exportar presets: $e');
+        print('Erro ao exportar presets: $e');
       }
       return null;
     }
@@ -195,13 +195,13 @@ class PresetService {
       await prefs.setStringList(_presetsKey, presetsJsonStrings);
 
       if (kDebugMode) {
-        print('✅ ${presets.length} presets importados com sucesso!');
+        print('${presets.length} presets importados com sucesso!');
       }
 
       return true;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Erro ao importar presets: $e');
+        print('Erro ao importar presets: $e');
       }
       return false;
     }

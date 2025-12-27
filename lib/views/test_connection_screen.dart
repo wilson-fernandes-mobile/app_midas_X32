@@ -55,19 +55,19 @@ class _TestConnectionScreenState extends State<TestConnectionScreen> {
     final port = int.tryParse(_portController.text) ?? 10023;
 
     if (ip.isEmpty) {
-      _addLog('❌ ERRO: Digite o endereço IP do console');
+      _addLog('ERRO: Digite o endereço IP do console');
       return;
     }
 
-    _addLog('📡 Conectando a $ip:$port...');
+    _addLog('Conectando a $ip:$port...');
 
     final success = await viewModel.connect(ip, port: port);
 
     if (success) {
-      _addLog('✅ CONECTADO com sucesso!');
-      _addLog('💡 Use os botões abaixo para testar comandos OSC\n');
+      _addLog('CONECTADO com sucesso!');
+      _addLog('Use os botões abaixo para testar comandos OSC\n');
     } else {
-      _addLog('❌ ERRO: Falha ao conectar');
+      _addLog('ERRO: Falha ao conectar');
       if (viewModel.errorMessage != null) {
         _addLog('   ${viewModel.errorMessage}');
       }
